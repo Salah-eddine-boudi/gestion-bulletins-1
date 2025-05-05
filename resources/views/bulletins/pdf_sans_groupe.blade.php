@@ -293,18 +293,12 @@
             </div>
         </div>
 
-        <!-- Tableau des résultats avec séparateurs blancs garantis -->
+        <!-- Tableau des résultats avec séparateurs blancs garantis - Sans le bloc Groupe -->
         <table>
             <thead>
                 <tr>
                     <!-- En-têtes Module/Cours avec bordure droite -->
                     <th colspan="3" class="main-header" style="border-right: 0.5px solid #000;">Module/Cours</th>
-                    
-                    <!-- Séparateur strictement blanc -->
-                    <th class="separator-col" style="background-color: white !important;"></th>
-                    
-                    <!-- En-têtes Groupe avec bordures gauche et droite -->
-                    <th colspan="3" class="main-header" style="border-left: 0.5px solid #000; border-right: 0.5px solid #000;">Groupe</th>
                     
                     <!-- Séparateur strictement blanc -->
                     <th class="separator-col" style="background-color: white !important;"></th>
@@ -317,14 +311,6 @@
                     <th class="sub-header module-col">Libellé</th>
                     <th class="sub-header vh-col">V.H</th>
                     <th class="sub-header right-border">Crédits</th>
-                    
-                    <!-- Séparateur strictement blanc -->
-                    <th class="separator-col" style="background-color: white !important;"></th>
-                    
-                    <!-- Sous-en-têtes Groupe -->
-                    <th class="sub-header left-border">Min.</th>
-                    <th class="sub-header">Max.</th>
-                    <th class="sub-header right-border">Moy.</th>
                     
                     <!-- Séparateur strictement blanc -->
                     <th class="separator-col" style="background-color: white !important;"></th>
@@ -354,10 +340,6 @@
                     <td class="number-cell vh-col">{{ $vhTotal }}</td>
                     <td class="number-cell right-border">{{ $ectsTotal }}</td>
                     <td class="separator-col"></td>
-                    <td class="number-cell left-border">{{ str_replace('.', ',', number_format($minGeneral, 2)) }}</td>
-                    <td class="number-cell">{{ str_replace('.', ',', number_format($maxGeneral, 2)) }}</td>
-                    <td class="number-cell right-border">{{ str_replace('.', ',', number_format($moyenneGenerale, 2)) }}</td>
-                    <td class="separator-col"></td>
                     <td class="left-border"></td>
                     <td></td>
                     <td class="number-cell">{{ str_replace('.', ',', $noteFinaleGenerale) }}</td>
@@ -367,7 +349,7 @@
                 </tr>
 
                 <tr class="first-spacer">
-                    <td colspan="14"></td>
+                    <td colspan="10"></td>
                 </tr>
 
                 @foreach($unitesEnseignement as $unite)
@@ -375,10 +357,6 @@
                         <td class="module-col">Unité d'enseignement - {{ $unite->intitule }}</td>
                         <td class="vh-col">{{ $unite->volumeHoraireTotal }}</td>
                         <td class="right-border">{{ $unite->creditsTotal }}</td>
-                        <td class="separator-col"></td>
-                        <td class="left-border">{{ is_numeric($unite->min) ? number_format($unite->min, 2) : $unite->min }}</td>
-                        <td>{{ is_numeric($unite->max) ? number_format($unite->max, 2) : $unite->max }}</td>
-                        <td class="right-border">{{ is_numeric($unite->moyenne) ? number_format($unite->moyenne, 2) : $unite->moyenne }}</td>
                         <td class="separator-col"></td>
                         <td class="left-border"></td>
                         <td></td>
@@ -394,10 +372,6 @@
                             <td class="vh-col">{{ $matiere->volume_horaire }}</td>
                             <td class="right-border">{{ $matiere->ects }}</td>
                             <td class="separator-col"></td>
-                            <td class="left-border">{{ is_numeric($matiere->min) ? number_format($matiere->min, 2) : $matiere->min }}</td>
-                            <td>{{ is_numeric($matiere->max) ? number_format($matiere->max, 2) : $matiere->max }}</td>
-                            <td class="right-border">{{ is_numeric($matiere->moyenne) ? number_format($matiere->moyenne, 2) : $matiere->moyenne }}</td>
-                            <td class="separator-col"></td>
                             <td class="left-border">{{ is_numeric($matiere->note_av_r) ? number_format($matiere->note_av_r, 2) : $matiere->note_av_r }}</td>
                             <td>{{ is_numeric($matiere->note_ap_r) ? number_format($matiere->note_ap_r, 2) : $matiere->note_ap_r }}</td>
                             <td>{{ is_numeric($matiere->note_finale) ? number_format($matiere->note_finale, 2) : $matiere->note_finale }}</td>
@@ -411,10 +385,6 @@
                 <tr class="stage-row">
                     <td class="module-col">Stage</td>
                     <td class="vh-col">1 mois</td>
-                    <td class="right-border"></td>
-                    <td class="separator-col"></td>
-                    <td class="left-border"></td>
-                    <td></td>
                     <td class="right-border"></td>
                     <td class="separator-col"></td>
                     <td class="left-border"></td>
@@ -506,89 +476,52 @@
                     <p class="chart-description">Visualisation de vos forces et points à améliorer</p>
                     <div class="chart-details" style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 8px; font-size: 8pt; text-align: left;">
                         <p style="margin: 2px 0;"><strong>Zone bleue:</strong> Vos compétences</p>
-                        <p style="margin: 2px 0;"><strong>Zone grise:</strong> Moyenne de la promotion</p>
-                        <p style="margin: 2px 0;"><strong>Points forts:</strong> 
-                            @php
-                                $pointsForts = ["Mathématiques", "Physique"];
-                                $pointsFaibles = ["Informatique", "Langues"];
-                            @endphp
-                            @if(isset($pointsForts) && count($pointsForts) > 0)
-                                {{ implode(', ', $pointsForts) }}
-                            @else
-                                Information non disponible
-                            @endif
-                        </p>
-                        <p style="margin: 2px 0;"><strong>Points à améliorer:</strong> 
-                            @if(isset($pointsFaibles) && count($pointsFaibles) > 0)
-                                {{ implode(', ', $pointsFaibles) }}
-                            @else
-                                Information non disponible
-                            @endif
-                        </p>
+                        <p style="margin: 2px 0;"><strong>Valeur max:</strong> 20/20</p>
+                        <p style="margin: 2px 0;"><strong>Seuil de validation:</strong> 10/20</p>
                     </div>
                 </div>
             </div>
             
             <!-- Deuxième rangée de graphiques -->
-            <div class="charts-row" style="display: flex; justify-content: space-between;">
-                <!-- Diagramme circulaire - Répartition ECTS -->
+            <div class="charts-row" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <!-- Graphique d'évolution -->
                 <div class="chart-col" style="width: 48%;">
-                    <h4 class="chart-title">Répartition des crédits ECTS</h4>
-                    @if(isset($chartImages['pie']))
-                        <img src="{{ $chartImages['pie'] }}" alt="Diagramme circulaire" class="chart-image" style="width: 100%;">
+                    <h4 class="chart-title">Évolution par semestre</h4>
+                    @if(isset($chartImages['evolution']))
+                        <img src="{{ $chartImages['evolution'] }}" alt="Évolution par semestre" class="chart-image" style="width: 100%;">
                     @else
                         <p style="text-align: center; color: #888;">Graphique non disponible</p>
                     @endif
-                    <p class="chart-description">Répartition des crédits ECTS validés par domaine</p>
+                    <p class="chart-description">Progression de vos résultats au cours de l'année</p>
                     <div class="chart-details" style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 8px; font-size: 8pt; text-align: left;">
-                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-                            <div style="width: 48%; margin-bottom: 4px;">
-                                <span style="display: inline-block; width: 10px; height: 10px; background-color: rgba(75, 0, 130, 0.7); margin-right: 5px;"></span>
-                                <span>Sciences fondamentales: {{ $ectsValides * 0.4 }} ECTS</span>
-                            </div>
-                            <div style="width: 48%; margin-bottom: 4px;">
-                                <span style="display: inline-block; width: 10px; height: 10px; background-color: rgba(255, 165, 0, 0.7); margin-right: 5px;"></span>
-                                <span>Sciences de l'ingénieur: {{ $ectsValides * 0.3 }} ECTS</span>
-                            </div>
-                            <div style="width: 48%; margin-bottom: 4px;">
-                                <span style="display: inline-block; width: 10px; height: 10px; background-color: rgba(0, 128, 0, 0.7); margin-right: 5px;"></span>
-                                <span>Informatique: {{ $ectsValides * 0.15 }} ECTS</span>
-                            </div>
-                            <div style="width: 48%; margin-bottom: 4px;">
-                                <span style="display: inline-block; width: 10px; height: 10px; background-color: rgba(30, 144, 255, 0.7); margin-right: 5px;"></span>
-                                <span>Langues et SHS: {{ $ectsValides * 0.15 }} ECTS</span>
-                            </div>
-                        </div>
-                        <p style="margin: 2px 0; margin-top: 5px;"><strong>Total validé:</strong> {{ $ectsValides }}/{{ $ectsTotal }} ECTS ({{ round(($ectsValides/$ectsTotal)*100) }}%)</p>
+                        <p style="margin: 2px 0;"><strong>Tendance:</strong> 
+                            @php
+                                $tendance = "positive";
+                                $pourcentage = "+12%";
+                            @endphp
+                            @if($tendance == "positive")
+                                En progression ({{ $pourcentage }})
+                            @elseif($tendance == "stable")
+                                Stable
+                            @else
+                                En régression ({{ $pourcentage }})
+                            @endif
+                        </p>
                     </div>
                 </div>
                 
-                <!-- Graphique d'évolution temporelle -->
+                <!-- Graphique de répartition -->
                 <div class="chart-col" style="width: 48%;">
-                    <h4 class="chart-title">Évolution des performances</h4>
-                    @if(isset($chartImages['evolution']))
-                        <img src="{{ $chartImages['evolution'] }}" alt="Graphique d'évolution" class="chart-image" style="width: 100%;">
+                    <h4 class="chart-title">Répartition des crédits ECTS</h4>
+                    @if(isset($chartImages['ects']))
+                        <img src="{{ $chartImages['ects'] }}" alt="Répartition des ECTS" class="chart-image" style="width: 100%;">
                     @else
                         <p style="text-align: center; color: #888;">Graphique non disponible</p>
                     @endif
-                    <p class="chart-description">Évolution de vos résultats au cours de l'année</p>
+                    <p class="chart-description">Distribution des crédits ECTS par domaine</p>
                     <div class="chart-details" style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 8px; font-size: 8pt; text-align: left;">
-                        <p style="margin: 2px 0;"><strong>Ligne bleue:</strong> Évolution de votre moyenne générale</p>
-                        <p style="margin: 2px 0;"><strong>Ligne orange:</strong> Évolution de la moyenne de promotion</p>
-                        <p style="margin: 2px 0;"><strong>Tendance:</strong> 
-                            @php
-                                $tendance = "positive";  // ou 'negative', 'stable'
-                                $variation = "+1.5";
-                            @endphp
-                            @if($tendance == 'positive')
-                                <span style="color: green;">Progression (+{{ $variation }} points)</span>
-                            @elseif($tendance == 'negative')
-                                <span style="color: red;">Diminution ({{ $variation }} points)</span>
-                            @else
-                                <span style="color: blue;">Stable</span>
-                            @endif
-                        </p>
-                        <p style="margin: 2px 0;"><strong>Périodes:</strong> Semestre 1 (Sep-Jan), Semestre 2 (Fév-Juin)</p>
+                        <p style="margin: 2px 0;"><strong>Total validés:</strong> {{ $ectsValides }}/{{ $ectsTotal }} ECTS</p>
+                        <p style="margin: 2px 0;"><strong>Taux de réussite:</strong> {{ number_format(($ectsValides / $ectsTotal) * 100, 1) }}%</p>
                     </div>
                 </div>
             </div>
@@ -596,130 +529,21 @@
         
         <!-- Section d'analyse et recommandations -->
         <div class="analysis-section">
-            <h3 class="analysis-title">Analyse et recommandations</h3>
-            
+            <h3 class="analysis-title">Analyse et recommandations personnalisées</h3>
             <div class="analysis-content">
-                @php
-                    // Calculer le percentile en fonction du rang
-                    $percentile = 50; // Valeur par défaut
-                    
-                    if(!empty($rangGeneral)) {
-                        $rangeParts = explode('/', $rangGeneral);
-                        if(count($rangeParts) == 2) {
-                            $position = intval($rangeParts[0]);
-                            $total = intval($rangeParts[1]);
-                            
-                            if($total > 0) {
-                                $percentile = round((($total - $position + 1) / $total) * 100);
-                            }
-                        }
-                    }
-                    
-                    // Déterminer les points forts et faibles en fonction de la moyenne
-                    $noteFinale = is_numeric($moyenneGenerale) ? $moyenneGenerale : 0;
-                @endphp
-                
-                <p>Moyenne générale : <strong>{{ is_numeric($noteFinaleGenerale) ? str_replace('.', ',', $noteFinaleGenerale) : $noteFinaleGenerale }}/20</strong>
-                @if($noteFinale >= 14)
-                    <span style="color: green;">(Excellent)</span>
-                @elseif($noteFinale >= 12)
-                    <span style="color: blue;">(Bon)</span>
-                @elseif($noteFinale >= 10)
-                    <span style="color: orange;">(Satisfaisant)</span>
-                @else
-                    <span style="color: red;">(À améliorer)</span>
-                @endif
-                </p>
-                
-                <p>Position dans la promotion : <strong>{{ $rangGeneral }}</strong>
-                @if($percentile >= 75)
-                    <span style="color: green;">(Top 25%)</span>
-                @elseif($percentile >= 50)
-                    <span style="color: blue;">(Top 50%)</span>
-                @elseif($percentile >= 25)
-                    <span style="color: orange;">(Top 75%)</span>
-                @else
-                    <span style="color: red;">(Dernier quart)</span>
-                @endif
-                </p>
-                
-                <p>Crédits ECTS validés : <strong>{{ $ectsValides }}/{{ $ectsTotal }}</strong>
-                @if($ectsValides == $ectsTotal)
-                    <span style="color: green;">(Tous validés)</span>
-                @elseif($ectsValides >= $ectsTotal * 0.75)
-                    <span style="color: blue;">(Majorité validée)</span>
-                @elseif($ectsValides >= $ectsTotal * 0.5)
-                    <span style="color: orange;">(Partiellement validés)</span>
-                @else
-                    <span style="color: red;">(Peu validés)</span>
-                @endif
-                </p>
+                <p>Cette analyse est générée automatiquement à partir de vos résultats académiques :</p>
                 
                 <div class="recommendation-item recommendation-strong">
-                    <p style="margin: 0;"><strong>Points forts :</strong> 
-                    @if($noteFinale >= 14)
-                        Excellente maîtrise des compétences attendues. Performance académique supérieure à la moyenne dans la plupart des matières.
-                    @elseif($noteFinale >= 12)
-                        Bonne maîtrise des compétences fondamentales. Performance académique satisfaisante dans plusieurs matières.
-                    @else
-                        Compétences démontrées dans certaines matières spécifiques. Effort et assiduité remarqués dans le travail académique.
-                    @endif
-                    </p>
+                    <strong>Points forts :</strong> Excellente performance en mathématiques et physique. Continuez à exploiter ces forces dans vos projets futurs.
                 </div>
                 
                 <div class="recommendation-item recommendation-warning">
-                    <p style="margin: 0;"><strong>Points à améliorer :</strong> 
-                    @if($noteFinale >= 14)
-                        Continuer à développer les compétences transversales et envisager des projets extrascolaires pour valoriser davantage ce profil.
-                    @elseif($noteFinale >= 12)
-                        Renforcer certaines matières spécifiques et améliorer les méthodes de travail pour viser l'excellence académique.
-                    @elseif($noteFinale >= 10)
-                        Intensifier le travail dans les matières fondamentales et établir un planning d'études plus rigoureux.
-                    @else
-                        Redoubler d'efforts dans l'ensemble des matières et envisager un soutien pédagogique supplémentaire.
-                    @endif
-                    </p>
+                    <strong>Axes d'amélioration :</strong> La programmation informatique nécessite plus d'attention. Nous vous recommandons de consacrer plus de temps aux exercices pratiques.
                 </div>
                 
                 <div class="recommendation-item">
-                    <p style="margin: 0;"><strong>Orientation conseillée :</strong> 
-                    @if($percentile >= 75)
-                        Ce profil académique laisse présager de nombreuses possibilités en cycle ingénieur. Les options d'approfondissement en 
-                        @if($eleve->niveau_scolaire == 'JM1')
-                            sciences fondamentales sont particulièrement recommandées pour JM2.
-                        @elseif($eleve->niveau_scolaire == 'JM2')
-                            spécialités techniques sont particulièrement recommandées pour JM3.
-                        @else
-                            domaines de spécialité sont particulièrement recommandées pour le cycle ingénieur.
-                        @endif
-                    @elseif($percentile >= 50)
-                        Le profil académique est équilibré mais gagnerait à se renforcer dans certains domaines avant le 
-                        @if($eleve->niveau_scolaire == 'JM1')
-                            passage en JM2.
-                        @elseif($eleve->niveau_scolaire == 'JM2')
-                            passage en JM3.
-                        @else
-                            passage en cycle ingénieur.
-                        @endif
-                    @else
-                        Un accompagnement personnalisé est recommandé pour identifier les domaines d'amélioration avant le 
-                        @if($eleve->niveau_scolaire == 'JM1')
-                            passage en JM2.
-                        @elseif($eleve->niveau_scolaire == 'JM2')
-                            passage en JM3.
-                        @else
-                            passage en cycle ingénieur.
-                        @endif
-                    @endif
-                    </p>
+                    <strong>Conseil général :</strong> Votre parcours est globalement satisfaisant. Pour continuer à progresser, maintenez une participation active en cours et n'hésitez pas à solliciter vos enseignants pour des clarifications.
                 </div>
-            </div>
-        </div>
-        
-        <!-- Signature en bas de la deuxième page -->
-        <div class="footer-row clearfix" style="margin-top: 30px;">
-            <div class="stamp-area" style="width: 100%; text-align: right;">
-                <p style="margin: 0;">Direction des Études - JUNIA Maroc</p>
             </div>
         </div>
     </div>

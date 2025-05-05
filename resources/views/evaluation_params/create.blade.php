@@ -1,88 +1,162 @@
-{{-- resources/views/evaluation_params/create.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
 <div class="container py-4">
-  <h1>Créer un Paramétrage d'Évaluation</h1>
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h1 class="h4 mb-0">Créer un paramétrage d’évaluation</h1>
+    </div>
+    <div class="card-body">
+      {{-- Professeur --}}
+      <p class="mb-4">
+        <strong>Enseignant :</strong>
+        {{ $prof->user->prenom }} {{ $prof->user->nom }}
+      </p>
 
-  {{-- Professeur --}}
-  <div class="mb-3">
-    <strong>Professeur :</strong>
-    {{ $prof->user->prenom }} {{ $prof->user->nom }}
-  </div>
+      {{-- Erreurs --}}
+      @if($errors->any())
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            @foreach($errors->all() as $e)
+              <li>{{ $e }}</li>
+            @endforeach
+          </ul>
+        </div>
+      @endif
 
-  {{-- Erreurs --}}
-  @if($errors->any())
-    <div class="alert alert-danger">
-      <ul class="mb-0">
-        @foreach($errors->all() as $e)
-          <li>{{ $e }}</li>
+      <form action="{{ route('evaluation-params.store') }}" method="POST" id="totalEvalForm">
+        @csrf
+
+        {{-- Matière --}}
+        <div class="row mb-3">
+          <label for="id_matiere" class="col-sm-4 col-form-label">Matière</label>
+          <div class="col-sm-8">
+            <select
+              id="id_matiere"
+              name="id_matiere"
+              class="form-select @error('id_matiere') is-invalid @enderror"
+              required
+            >
+              <option value="">Sélectionnez une matière…</option>
+              @foreach($matieres as $m)
+                <option value="{{ $m->id_matiere }}"
+                  {{ old('id_matiere') == $m->id_matiere ? 'selected' : '' }}>
+                  {{ $m->intitule }}
+                </option>
+              @endforeach
+            </select>
+            @error('id_matiere')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+        </div>
+
+        {{-- Nombre de DS --}}
+        <div class="row mb-3">
+          <label for="totalDS" class="col-sm-4 col-form-label">Nombre de DS</label>
+          <div class="col-sm-8">
+            <input
+              type="number"
+              id="totalDS"
+              name="total"
+              class="form-control @error('total') is-invalid @enderror"
+              value="{{ old('total', 0) }}"
+              min="0" max="7"
+              required
+            >
+            @error('total')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+        </div>
+
+        <hr>
+
+        {{-- Override rattrapage --}}
+        <div class="row mb-3">
+          <div class="col-sm-4"></div>
+          <div class="col-sm-8">
+            <div class="form-check">
+              <input
+                class="form-check-input @error('override_rattrapage') is-invalid @enderror"
+                type="checkbox"
+                name="override_rattrapage"
+                id="override_rattrapage"
+                value="1"
+                {{ old('override_rattrapage') ? 'checked' : '' }}
+              >
+              <label class="form-check-label" for="override_rattrapage">
+                Activer l’override du pourcentage de rattrapage
+              </label>
+              @error('override_rattrapage')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+        </div>
+
+        {{-- Pourcentages rattrapage / examen final --}}
+        @foreach([
+          'rattrapage'    => 'Pourcentage de rattrapage (%)',
+          'examen_final'  => 'Pourcentage de l’examen final (%)',
+        ] as $key => $label)
+        <div class="row mb-4">
+          <label for="pourcentage_{{ $key }}" class="col-sm-4 col-form-label">{{ $label }}</label>
+          <div class="col-sm-8">
+            <input
+              type="number"
+              id="pourcentage_{{ $key }}"
+              name="pourcentage_{{ $key }}"
+              class="form-control @error('pourcentage_'.$key) is-invalid @enderror"
+              value="{{ old('pourcentage_'.$key, $key==='examen_final' ? 100 : 0) }}"
+              min="0" max="100" step="0.01"
+              required
+            >
+            @error('pourcentage_'.$key)
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+        </div>
         @endforeach
-      </ul>
+
+        {{-- Totaux dynamiques --}}
+        <div class="alert alert-info d-flex justify-content-between align-items-center mb-3">
+          <span>Total DS + Examen : <strong><span id="totalPercentage">0.00</span>%</strong></span>
+          <span id="percentageWarning" class="text-danger" style="display:none;">
+            Le total DS + Examen doit être égal à 100 %.
+          </span>
+        </div>
+
+        <div class="alert alert-info d-flex justify-content-between align-items-center mb-4">
+          <span>Total Rattrapage + Examen final : <strong><span id="totalRattExam">0.00</span>%</strong></span>
+          <span id="rattExamWarning" class="text-danger" style="display:none;">
+            Le total rattrapage + examen final doit être égal à 100 %.
+          </span>
+        </div>
+
+        {{-- Tableau DS + Examen --}}
+        <div class="table-responsive mb-4">
+          <table class="table table-striped table-bordered" id="evalTable">
+            <thead class="table-light">
+              <tr>
+                <th>Type</th>
+                <th style="width:25%">Pourcentage (%)</th>
+                <th style="width:25%">Nb d’épreuves</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        {{-- Bouton de validation --}}
+        <div class="d-grid">
+          <button type="submit" id="submitBtn" class="btn btn-success">
+            Enregistrer
+          </button>
+        </div>
+      </form>
     </div>
-  @endif
-
-  <form action="{{ route('evaluation-params.store') }}" method="POST" id="totalEvalForm">
-    @csrf
-
-    {{-- Matière --}}
-    <div class="mb-3 row">
-      <label for="id_matiere" class="col-sm-4 col-form-label">Matière</label>
-      <div class="col-sm-8">
-        <select name="id_matiere" id="id_matiere" class="form-control" required>
-          <option value="">Choisir une matière</option>
-          @foreach($matieres as $m)
-            <option value="{{ $m->id_matiere }}"
-              {{ old('id_matiere')==$m->id_matiere?'selected':'' }}>
-              {{ $m->intitule }}
-            </option>
-          @endforeach
-        </select>
-      </div>
-    </div>
-
-    {{-- Nombre de DS --}}
-    <div class="mb-3 row">
-      <label for="totalDS" class="col-sm-4 col-form-label">Nombre de DS</label>
-      <div class="col-sm-8">
-        <input
-          type="number"
-          name="total"
-          id="totalDS"
-          class="form-control"
-          value="{{ old('total', 0) }}"
-          min="0"
-          max="7"
-          required>
-      </div>
-    </div>
-
-    <hr>
-
-    {{-- Somme des % --}}
-    <div class="alert alert-info mb-3">
-      <strong>Total des pourcentages : <span id="totalPercentage">0.00</span>%</strong>
-      <div id="percentageWarning" class="text-danger mt-1" style="display:none;">
-        Le total doit être égal à 100 %.
-      </div>
-    </div>
-
-    {{-- Tableau DS + Examen --}}
-    <table class="table table-bordered" id="evalTable">
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th style="width:25%">Pourcentage (%)</th>
-          <th style="width:25%">Nb d’épreuves</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <button type="submit" id="submitBtn" class="btn btn-primary">
-      Enregistrer le paramétrage
-    </button>
-  </form>
+  </div>
 </div>
 @endsection
 
@@ -93,50 +167,49 @@ document.addEventListener('DOMContentLoaded', () => {
   const tbody        = document.querySelector('#evalTable tbody');
   const pctSpan      = document.getElementById('totalPercentage');
   const pctWarn      = document.getElementById('percentageWarning');
+
+  const rattInput    = document.getElementById('pourcentage_rattrapage');
+  const examFinInput = document.getElementById('pourcentage_examen_final');
+  const rattExamSpan = document.getElementById('totalRattExam');
+  const rattExamWarn = document.getElementById('rattExamWarning');
+
   const submitBtn    = document.getElementById('submitBtn');
   const form         = document.getElementById('totalEvalForm');
 
-  // Anciennes valeurs
-  const oldEvals = @json(old('evaluations', []));
-  let oldDSPct   = 25, oldExamPct = 75;
-  oldEvals.forEach(ev => {
-    if(ev.type === 'DS')   oldDSPct   = ev.pourcentage;
-    if(ev.type === 'EXAM') oldExamPct = ev.pourcentage;
-  });
-
-  function renderRows(){
-    const dsCount = Math.min(Math.max(parseInt(totalInput.value)||0, 0), 7);
+  // ----- RENDER DES LIGNES DS + EXAM -----------------------------------------------------
+  function renderRows () {
+    let dsCount = parseInt(totalInput.value) || 0;
+    if (dsCount < 0) dsCount = 0;
+    if (dsCount > 7) dsCount = 7;
     totalInput.value = dsCount;
+
     tbody.innerHTML = '';
 
-    // DS
-    if(dsCount > 0){
+    // DS séparés
+    for (let i = 0; i < dsCount; i++) {
       addRow({
-        type:        'DS',
-        label:       'DS',
-        pourcentage: oldDSPct,
-        nombre:      dsCount,
-        idx:         0,
-        editableNb:  true
+        type : 'DS',             // <-- envoyé à Laravel
+        label: 'DS ' + (i + 1),  // <-- affiché à l’écran
+        pourcentage: 0,
+        nombre: 1,
+        idx: i
       });
     }
 
     // Examen final
-    const examIdx = dsCount > 0 ? 1 : 0;
-    const examPct = dsCount > 0 ? oldExamPct : 100;
     addRow({
-      type:        'EXAM',
-      label:       'Examen final',
-      pourcentage: examPct,
-      nombre:      1,
-      idx:         examIdx,
-      editableNb:  false
+      type : 'EXAM',
+      label: 'Examen final',
+      pourcentage: dsCount === 0 ? 100 : 0,
+      nombre: 1,
+      idx: dsCount
     });
 
-    calculateTotal();
+    verifyTotals();
   }
 
-  function addRow({type,label,pourcentage,nombre,idx,editableNb}){
+  // ----- AJOUT D’UNE LIGNE --------------------------------------------------------------
+  function addRow ({type, label, pourcentage, nombre, idx}) {
     const tr = document.createElement('tr');
     tr.dataset.type = type;
     tr.innerHTML = `
@@ -145,63 +218,60 @@ document.addEventListener('DOMContentLoaded', () => {
         ${label}
       </td>
       <td>
-        <input
-          type="number"
-          name="evaluations[${idx}][pourcentage]"
-          class="form-control pct"
-          value="${pourcentage}"
-          step="0.01"
-          min="0"
-          max="100"
-          required>
+        <input type="number"
+               name="evaluations[${idx}][pourcentage]"
+               class="form-control pct"
+               value="${pourcentage}"
+               step="0.01" min="0" max="100" required>
       </td>
       <td>
-        <input
-          type="number"
-          name="evaluations[${idx}][nombre_evaluations]"
-          class="form-control nb"
-          value="${nombre}"
-          min="1"
-          ${editableNb?'':'readonly'}>
+        <input type="number"
+               name="evaluations[${idx}][nombre_evaluations]"
+               class="form-control"
+               value="${nombre}"
+               min="1" readonly>
       </td>`;
     tbody.appendChild(tr);
 
-    tr.querySelector('.pct').addEventListener('input', onPctChange);
-    if(editableNb){
-      tr.querySelector('.nb').addEventListener('input', calculateTotal);
-    }
+    tr.querySelector('.pct').addEventListener('input', verifyTotals);
   }
 
-  function onPctChange(e){
-    const tr = e.target.closest('tr');
-    if(tr.dataset.type === 'EXAM'){
-      const examVal = parseFloat(e.target.value)||0;
-      const dsTr = tbody.querySelector('tr[data-type="DS"]');
-      if(dsTr){
-        dsTr.querySelector('.pct').value = Math.max(0,100 - examVal).toFixed(2);
-      }
-    }
-    calculateTotal();
+  // ----- VÉRIFICATIONS DES TOTAUX --------------------------------------------------------
+  function verifyTotals () {
+    // Total DS + EXAM
+    let sumDSExam = 0;
+    tbody.querySelectorAll('.pct').forEach(i => {
+      sumDSExam += parseFloat(i.value) || 0;
+    });
+    pctSpan.textContent   = sumDSExam.toFixed(2);
+    pctWarn.style.display = Math.abs(sumDSExam - 100) > 0.01 ? 'inline' : 'none';
+
+    // Total Rattrapage + Examen final
+    const r = parseFloat(rattInput.value) || 0;
+    const e = parseFloat(examFinInput.value) || 0;
+    const sumRatt = r + e;
+    rattExamSpan.textContent   = sumRatt.toFixed(2);
+    rattExamWarn.style.display = Math.abs(sumRatt - 100) > 0.01 ? 'inline' : 'none';
+
+    // Bouton
+    submitBtn.disabled = (pctWarn.style.display === 'inline' || rattExamWarn.style.display === 'inline');
   }
 
-  function calculateTotal(){
-    let sum=0;
-    tbody.querySelectorAll('.pct').forEach(inp => sum += parseFloat(inp.value)||0);
-    pctSpan.textContent = sum.toFixed(2);
-    const bad = Math.abs(sum - 100) > 0.01;
-    pctWarn.style.display = bad?'block':'none';
-    submitBtn.disabled = bad;
-  }
-
+  // ----- ÉVÉNEMENTS ---------------------------------------------------------------------
   totalInput.addEventListener('input', renderRows);
+  rattInput.addEventListener('input', verifyTotals);
+  examFinInput.addEventListener('input', verifyTotals);
+
   form.addEventListener('submit', e => {
-    if(Math.abs(parseFloat(pctSpan.textContent) - 100) > 0.01){
+    if (submitBtn.disabled) {
       e.preventDefault();
-      alert('La somme des pourcentages doit être de 100 %.');
+      alert('Veuillez corriger les pourcentages pour qu’ils fassent tous 100 %.');
     }
   });
 
+  // ----- INITIALISATION -----------------------------------------------------------------
   renderRows();
+  verifyTotals();
 });
 </script>
 @endpush

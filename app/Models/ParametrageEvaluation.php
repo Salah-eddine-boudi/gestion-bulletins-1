@@ -2,72 +2,49 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Professeur;
-use App\Models\Matiere;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ParametrageEvaluation extends Model
 {
     use HasFactory;
 
-    /**
-     * Nom de la table si différent de la convention (plural du nom de la classe).
-     */
-    protected $table = 'parametrage_evaluations';
-
-    /**
-     * Clé primaire
-     */
+    /** Table & clé primaire ----------------------------------------- */
+    protected $table      = 'parametrage_evaluations';
     protected $primaryKey = 'id_config';
+    public    $timestamps = true;                // created_at & updated_at
 
-    /**
-     * Type de la clé primaire (ici un entier).
-     */
-    protected $keyType = 'int';
-
-    /**
-     * Indique si la clé primaire est auto-incrémentée.
-     */
-    public $incrementing = true;
-
-    /**
-     * Active les timestamps (created_at / updated_at).
-     */
-    public $timestamps = true;
-
-    /**
-     * Attributs assignables en masse.
-     */
+    /** Attributs autorisés en écriture (mass-assignment) ------------- */
     protected $fillable = [
         'id_professeur',
         'id_matiere',
-        'type',
+        'type',                     // DS ou EXAM
         'nombre_evaluations',
         'pourcentage',
+        'override_rattrapage',
+        'pourcentage_rattrapage',
+        'pourcentage_examen_final',
     ];
 
-    /**
-     * Casts pour forcer le type de certaines colonnes.
-     */
+    /** Casts automatiques ------------------------------------------- */
     protected $casts = [
-        'id_professeur'      => 'integer',
-        'id_matiere'         => 'integer',
-        'nombre_evaluations' => 'integer',
-        'pourcentage'        => 'float',
+        'override_rattrapage'      => 'boolean',
+        'pourcentage'              => 'decimal:2',
+        'pourcentage_rattrapage'   => 'decimal:2',
+        'pourcentage_examen_final' => 'decimal:2',
     ];
 
-    /**
-     * Relation vers le professeur qui a défini ce paramétrage.
-     */
+    /* ===============================================================
+     |  Relations Eloquent
+     |===============================================================*/
+
+    // Professeur propriétaire
     public function professeur()
     {
         return $this->belongsTo(Professeur::class, 'id_professeur', 'id_prof');
     }
 
-    /**
-     * Relation vers la matière concernée.
-     */
+    // Matière concernée
     public function matiere()
     {
         return $this->belongsTo(Matiere::class, 'id_matiere', 'id_matiere');

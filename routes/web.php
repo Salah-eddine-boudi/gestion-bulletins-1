@@ -1,108 +1,142 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\MatiereController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ElevesController;
-use App\Http\Controllers\ProfesseurController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\UniteEnseignementController;
-use App\Http\Controllers\AssurerController;
-use App\Http\Controllers\EvaluationController;
-use App\Http\Controllers\InscriptionController;
-use App\Http\Controllers\DirecteurPedagogiqueController;
-use App\Http\Controllers\BulletinController;
-use App\Http\Controllers\ClasseController;
-use App\Http\Controllers\EvaluationParamController;
+use App\Http\Controllers\{
+    MatiereController,
+    ProfileController,
+    ElevesController,
+    ProfesseurController,
+    AdminController,
+    UniteEnseignementController,
+    AssurerController,
+    EvaluationController,
+    EvaluationParamController,
+    InscriptionController,
+    DirecteurPedagogiqueController,
+    BulletinController,
+    ClasseController
+};
 
-// Route d'accueil
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
 
-// Dashboard (auth et vérification)
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
-// Contact
-Route::get('/contact', function () {
-    return view('contact');
-})->name('contact');
 
-// Routes d'authentification Breeze
+
+/*
+|--------------------------------------------------------------------------
+| Routes publiques
+|--------------------------------------------------------------------------
+*/
+Route::get('/', fn () => view('welcome'))->name('home');
+Route::get('/contact', fn () => view('contact'))->name('contact');
+
+/*
+|--------------------------------------------------------------------------
+| Auth + dashboard
+|--------------------------------------------------------------------------
+*/
+Route::get('/dashboard', fn () => view('dashboard'))
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
 require __DIR__.'/auth.php';
 
-// Gestion du profil utilisateur (auth)
+/*
+|--------------------------------------------------------------------------
+| Routes protégées (auth)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    /* ---------- Profil utilisateur ---------- */
+    Route::get   ('/profile', [ProfileController::class, 'edit' ])->name('profile.edit');
+    Route::patch ('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
-// Ressources publiques
-Route::resource('unites-enseignement', UniteEnseignementController::class);
-Route::resource('matieres', MatiereController::class);
-Route::resource('professeurs', ProfesseurController::class);
-Route::resource('admins', AdminController::class);  // Si besoin, ne pas dupliquer
-Route::resource('assurer', AssurerController::class);
-
-// Ressources Evaluation et Inscription
-
-Route::resource('inscriptions', InscriptionController::class)->except(['show', 'edit', 'update', 'destroy']);
-
-// Routes personnalisées pour inscriptions (clé composite)
-Route::get('inscriptions/{id_eleve}/{annee_universitaire}', [InscriptionController::class, 'show'])->name('inscriptions.show');
-Route::get('inscriptions/{id_eleve}/{annee_universitaire}/edit', [InscriptionController::class, 'edit'])->name('inscriptions.edit');
-Route::put('inscriptions/{id_eleve}/{annee_universitaire}', [InscriptionController::class, 'update'])->name('inscriptions.update');
-Route::delete('inscriptions/{id_eleve}/{annee_universitaire}', [InscriptionController::class, 'destroy'])->name('inscriptions.destroy');
-
-// Directeur pédagogique
-Route::resource('directeurs', DirecteurPedagogiqueController::class);
-Route::get('directeurs/{directeur}/edit', [DirecteurPedagogiqueController::class, 'edit'])->name('directeurs.edit');
-
-// Saisie des notes pour les groupes de langue
-Route::get('/saisie-notes-groupe', [EvaluationController::class, 'createGroupLangue'])->name('saisie-notes-groupe');
-
-// Routes pour les élèves
-Route::resource('eleves', ElevesController::class)->parameters([
-    'eleves' => 'id_eleve'
-]);
-
-// Route Ajax pour récupérer les élèves filtrés (pour évaluations)
-Route::get('/get-eleves', [EvaluationController::class, 'getElevesByFilters'])->name('evaluations.getEleves');
-
-// Bulletin
-Route::get('/bulletins', [BulletinController::class, 'index'])->name('bulletins.index');
-Route::get('/bulletins/{id}', [BulletinController::class, 'show'])->name('bulletins.show');
-Route::get('/bulletins/{id}/pdf', [BulletinController::class, 'exportPdf'])->name('bulletins.export.pdf');
-Route::get('/bulletins/{id}/excel', [BulletinController::class, 'exportExcel'])->name('bulletins.export.excel');
-
-// Classes
-Route::resource('classes', ClasseController::class);
-
-// -------------------------------
-// Routes pour le RATTRAPAGE
-// -------------------------------
-// 2) Route dynamique pour l'affichage d'une évaluation (doit être en dernier)
-
-// Routes spécifiques pour les évaluations de rattrapage
-Route::get('/evaluations/rattrapage', [EvaluationController::class, 'rattrapageView'])->name('evaluations.rattrapage');
-Route::get('/evaluations/create-rattrapage', [EvaluationController::class, 'createRatt'])->name('evaluations.createRatt');
-Route::get('/evaluations/eleves-rattrapage', [EvaluationController::class, 'getElevesPourRattrapage'])->name('evaluations.getRattrapage');
-Route::post('/evaluations/store-rattrapage', [EvaluationController::class, 'storeRattGroup'])->name('evaluations.storeRattrapage');
-
-// La resource pour les autres actions doit être déclarée après
-Route::resource('evaluations', EvaluationController::class);
-
-
-
-Route::middleware(['auth'])->group(function(){
-    Route::resource('evaluation-params', EvaluationParamController::class)->only([
-        'index', 'create', 'store','edit'
+    /* ---------- Ressources « simples » ---------- */
+    Route::resources([
+        'unites-enseignement' => UniteEnseignementController::class,
+        'matieres'            => MatiereController::class,
+        'professeurs'         => ProfesseurController::class,
+        'admins'              => AdminController::class,
+        'assurer'             => AssurerController::class,
+        'classes'             => ClasseController::class,
+        'directeurs'          => DirecteurPedagogiqueController::class,
+        'eleves'              => ElevesController::class,
+    ], [
+        // Paramètre personnalisé pour élèves
+        'eleves' => ['parameters' => ['eleves' => 'id_eleve']],
     ]);
+
+    /* ---------- Inscriptions (clé composite) ---------- */
+    Route::resource('inscriptions', InscriptionController::class)
+        ->except(['show', 'edit', 'update', 'destroy']);
+
+    Route::prefix('inscriptions')->name('inscriptions.')->group(function () {
+        Route::get   ('{id_eleve}/{annee_universitaire}',        [InscriptionController::class, 'show'   ])->name('show');
+        Route::get   ('{id_eleve}/{annee_universitaire}/edit',   [InscriptionController::class, 'edit'   ])->name('edit');
+        Route::put   ('{id_eleve}/{annee_universitaire}',        [InscriptionController::class, 'update' ])->name('update');
+        Route::delete('{id_eleve}/{annee_universitaire}',        [InscriptionController::class, 'destroy'])->name('destroy');
+    });
+
+    /* ---------- Bulletins ---------- */
+    Route::prefix('bulletins')->name('bulletins.')->group(function () {
+        Route::get('/',            [BulletinController::class, 'index'     ])->name('index');
+        Route::get('{id}',         [BulletinController::class, 'show'      ])->name('show');
+        Route::get('{id}/pdf',     [BulletinController::class, 'exportPdf' ])->name('export.pdf');
+        Route::get('{id}/excel',   [BulletinController::class, 'exportExcel'])->name('export.excel');
+    });
+
+    /* ---------- Routes spécifiques Évaluations (rattrapage) ---------- */
+    Route::prefix('evaluations')->name('evaluations.')->group(function () {
+        Route::get ('/rattrapage',                [EvaluationController::class, 'rattrapageView'    ])->name('rattrapage');
+        Route::get ('/create-rattrapage',         [EvaluationController::class, 'createRatt'        ])->name('createRatt');
+        Route::get ('/eleves-rattrapage',         [EvaluationController::class, 'getElevesPourRattrapage'])->name('getRattrapage');
+        Route::post('/store-rattrapage',          [EvaluationController::class, 'storeRattGroup'    ])->name('storeRattrapage');
+
+        // Ajax helper
+        Route::get ('/get-eleves',                [EvaluationController::class, 'getElevesByFilters'])->name('getEleves');
+    });
+
+    /* ---------- Ressource Évaluations (après les routes « spéciales ») ---------- */
+    Route::resource('evaluations', EvaluationController::class);
+
+    /* ---------- Paramétrages d’évaluations ---------- */
+    Route::resource('evaluation-params', EvaluationParamController::class);
+});
+/* routes/web.php */
+
+// zone publique
+Route::view('/',      'public.accueil')->name('home');
+
+// zone protégée admin
+Route::middleware(['auth','can:admin'])->group(function () {
+    Route::view('/admin', 'admin.dashboard')->name('admin.dashboard');
 });
 
-Route::middleware(['auth'])->group(function(){
-    Route::resource('evaluation-params', EvaluationParamController::class);
+
+
+
+use Illuminate\Http\Request;
+
+
+Route::middleware('auth')->get('/mes-cookies', function (Request $request) {
+    // Tous les cookies
+    $cookies = $request->cookies->all();
+
+    // Toutes les variables de session
+    $session = $request->session()->all();
+
+    // L'utilisateur authentifié
+    $user = $request->user(); // ou Auth::user()
+
+    // Passez tout ça à une vue
+    return view('mes-cookies', compact('cookies', 'session', 'user'));
+});
+
+use App\Mail\TestMail;
+use Illuminate\Support\Facades\Mail;
+
+Route::get('/test-mail', function () {
+    Mail::to('test@example.com')->send(new TestMail());
+    return 'Test mail envoyé';
 });

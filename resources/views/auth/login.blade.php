@@ -1,81 +1,112 @@
+{{-- resources/views/auth/login.blade.php --}}
 @extends('layouts.app')
 
+{{-- Charger Bootstrap Icons (idéalement dans layouts.app <head>) --}}
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
 @section('content')
-<x-loading-animation :show="false" />
+<div class="container py-5">
+  <div class="row justify-content-center align-items-center" style="height: 90vh;">
+    <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+      <div class="card shadow-lg animate__animated animate__fadeIn" style="border-radius: 15px;">
+        <div class="card-body p-4">
+          <h2 class="text-center text-primary mb-4">Se Connecter</h2>
 
-<div class="container d-flex justify-content-center align-items-center" style="height: 90vh;">
-    <div class="card shadow-lg p-4 bg-white animate_animated animate_fadeIn" style="width: 400px; border-radius: 15px;">
-        <h2 class="text-center text-primary mb-4">Se Connecter</h2>
-
-        <!-- ✅ Amélioration de l'affichage du message de succès -->
-        @if(session('success'))
+          {{-- Message de succès --}}
+          @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <strong>✔ Succès !</strong> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              <strong>✔ Succès !</strong> {{ session('success') }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
+          @endif
 
-        <!-- Affichage des erreurs -->
-        @if ($errors->any())
+          {{-- Message d'erreurs --}}
+          @if($errors->any())
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
+          @endif
 
-        <form method="POST" action="{{ route('login') }}" id="loginForm">
+          <form method="POST" action="{{ route('login') }}" id="loginForm">
             @csrf
+
+            {{-- Email --}}
             <div class="mb-3">
-                <label for="email" class="form-label">Email :</label>
-                <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" required>
-                @error('email')
-                    <span class="text-danger small">{{ $message }}</span>
-                @enderror
+              <label for="email" class="form-label">Email :</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="form-control @error('email') is-invalid @enderror"
+                value="{{ old('email') }}"
+                required
+                autofocus
+              >
+              @error('email')<small class="text-danger">{{ $message }}</small>@enderror
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Mot de passe :</label>
-                <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
-                @error('password')
-                    <span class="text-danger small">{{ $message }}</span>
-                @enderror
+
+            {{-- Mot de passe --}}
+            <div class="mb-4">
+              <label for="password" class="form-label">Mot de passe :</label>
+              <div class="input-group">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  class="form-control @error('password') is-invalid @enderror"
+                  required
+                >
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  onclick="togglePassword('password','toggle-password-icon')"
+                >
+                  <i id="toggle-password-icon" class="bi bi-eye-slash"></i>
+                </button>
+              </div>
+              @error('password')<small class="text-danger">{{ $message }}</small>@enderror
             </div>
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary w-100">Se Connecter</button>
+
+            {{-- Bouton de connexion --}}
+            <div class="d-grid mb-3">
+              <button type="submit" class="btn btn-primary w-100">Se Connecter</button>
             </div>
-        </form>
-        <div class="text-center mt-3">
+          </form>
+
+          <div class="text-center">
             <a href="{{ route('password.request') }}" class="text-primary">Mot de passe oublié ?</a>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
-<!-- Scripts pour la gestion de l'animation -->
+{{-- Toggle œil et loader --}}
 <script>
-    // Gestion du message de succès
-    setTimeout(() => {
-        let alert = document.querySelector('.alert-success');
-        if (alert) {
-            alert.classList.add('fade');
-            setTimeout(() => alert.remove(), 500);
-        }
-    }, 10000);
+  function togglePassword(fieldId, iconId) {
+    const input = document.getElementById(fieldId);
+    const icon  = document.getElementById(iconId);
 
-    // Gestion de l'animation de chargement
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Afficher l'animation
-        document.getElementById('loading-animation').style.display = 'flex';
-        
-        // Soumettre le formulaire après un court délai
-        setTimeout(() => {
-            this.submit();
-        }, 1500);
-    });
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.replace('bi-eye-slash','bi-eye');
+    } else {
+      input.type = 'password';
+      icon.classList.replace('bi-eye','bi-eye-slash');
+    }
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    // Afficher loader si besoin...
+    setTimeout(()=> this.submit(), 800);
+  });
 </script>
-
 @endsection

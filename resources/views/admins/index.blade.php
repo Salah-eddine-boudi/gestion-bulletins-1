@@ -1,147 +1,173 @@
+{{-- resources/views/admins/index.blade.php --}}
 @extends('layouts.app')
 
-@section('content')
-<div class="container">
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-            <h3 class="mb-0 fw-bold">Liste des Administrateurs</h3>
-            <a href="{{ route('admins.create') }}" class="btn btn-primary d-flex align-items-center">
-                <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>
-                Ajouter un Admin
-            </a>
-        </div>
-        
-        <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-                </div>
-            @endif
+@section('title', 'Administrateurs')
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle" id="adminsTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Nom complet</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Rôle</th>
-                            <th scope="col">Accès</th>
-                            <th scope="col">Téléphone</th>
-                            <th scope="col">Bureau</th>
-                            <th scope="col" class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($admins as $admin)
-                            <tr>
-                                <td>{{ $admin->id_admin ?? $admin->id }}</td>
-                                <td>
-                                    @if($admin->user)
-                                        <div class="d-flex align-items-center">
-                                            @php
-                                                $photo = $admin->user->photo 
-                                                    ? asset('storage/' . $admin->user->photo) 
-                                                    : asset('storage/profile_pictures/default.png');
-                                            @endphp
-                                            <img src="{{ $photo }}" alt="Photo de profil" 
-                                                class="rounded-circle me-2" width="40" height="40" 
-                                                style="object-fit: cover;">
-                                            <div>
-                                                <span class="fw-medium">{{ $admin->user->prenom }} {{ $admin->user->nom }}</span>
-                                            </div>
-                                        </div>
-                                    @else
-                                        <span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1" aria-hidden="true"></i> Utilisateur introuvable</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($admin->user && $admin->user->email)
-                                        <a href="mailto:{{ $admin->user->email }}" class="text-decoration-none">
-                                            <i class="fas fa-envelope me-1 text-muted" aria-hidden="true"></i>
-                                            {{ $admin->user->email }}
-                                        </a>
-                                    @else
-                                        <span class="text-muted fst-italic">Non renseigné</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="badge bg-primary">{{ $admin->role }}</span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info text-dark">{{ $admin->acces }}</span>
-                                </td>
-                                <td>
-                                    @if($admin->tel)
-                                        <a href="tel:{{ $admin->tel }}" class="text-decoration-none">
-                                            <i class="fas fa-phone me-1 text-muted" aria-hidden="true"></i>
-                                            {{ $admin->tel }}
-                                        </a>
-                                    @else
-                                        <span class="text-muted fst-italic">Non renseigné</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($admin->bureau)
-                                        <i class="fas fa-building me-1 text-muted" aria-hidden="true"></i>
-                                        {{ $admin->bureau }}
-                                    @else
-                                        <span class="text-muted fst-italic">Non renseigné</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-end">
-                                        <a href="{{ route('admins.edit', $admin->id_admin ?? $admin->id) }}" 
-                                           class="btn btn-sm btn-warning me-2">
-                                            <i class="fas fa-edit me-1" aria-hidden="true"></i> Modifier
-                                        </a>
-                                        
-                                        <form action="{{ route('admins.destroy', $admin->id_admin ?? $admin->id) }}" 
-                                              method="POST" 
-                                              onsubmit="return confirm('Voulez-vous vraiment supprimer cet administrateur ?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash-alt me-1" aria-hidden="true"></i> Supprimer
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5">
-                                    <div class="d-flex flex-column align-items-center">
-                                        <i class="fas fa-user-slash text-muted mb-3" style="font-size: 3rem;"></i>
-                                        <h5 class="fw-bold">Aucun administrateur trouvé</h5>
-                                        <p class="text-muted">Commencez par ajouter un administrateur avec le bouton ci-dessus</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            @if($admins instanceof \Illuminate\Pagination\LengthAwarePaginator && $admins->hasPages())
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $admins->links() }}
-                </div>
-            @endif
-        </div>
+@section('content')
+<div class="container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb bg-transparent p-0 mb-0">
+      <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Tableau de bord</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Administrateurs</li>
+    </ol>
+  </nav>
+
+  <div class="card shadow-sm mb-4 rounded">
+    <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom">
+      <h4 class="mb-0">Liste des administrateurs</h4>
+      <a href="{{ route('admins.create') }}" class="btn btn-sm btn-success">
+        <i class="fas fa-plus-circle me-1"></i> Ajouter un admin
+      </a>
     </div>
+    <div class="card-body">
+
+      @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="fas fa-check-circle me-1"></i> {{ session('success') }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      @endif
+
+      {{-- Desktop table view --}}
+      <div class="table-responsive d-none d-md-block">
+        <table class="table table-striped table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width:5%">ID</th>
+              <th style="width:20%">Nom complet</th>
+              <th style="width:20%">Email</th>
+              <th style="width:10%">Rôle</th>
+              <th style="width:10%">Accès</th>
+              <th style="width:10%">Téléphone</th>
+              <th style="width:15%">Bureau</th>
+              <th class="text-center" style="width:10%">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @forelse($admins as $admin)
+              @php($user = $admin->user)
+              <tr>
+                <td class="text-muted">{{ $admin->id_admin ?? $admin->id }}</td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="me-2" style="width:40px; height:40px;">
+                      @if(optional($user)->photo)
+                        <img src="{{ asset('storage/'.$user->photo) }}"
+                             class="rounded-circle w-100 h-100 object-fit-cover"
+                             alt="">
+                      @else
+                        <div class="bg-secondary text-white rounded-circle w-100 h-100 d-flex align-items-center justify-content-center">
+                          {{ strtoupper(substr($user->prenom,0,1).substr($user->nom,0,1)) }}
+                        </div>
+                      @endif
+                    </div>
+                    <span class="fw-semibold">{{ $user->prenom }} {{ $user->nom }}</span>
+                  </div>
+                </td>
+                <td>
+                  <a href="mailto:{{ $user->email }}" class="d-block text-truncate" style="max-width:180px;">
+                    {{ $user->email }}
+                  </a>
+                </td>
+                <td><span class="badge bg-primary">{{ $admin->role }}</span></td>
+                <td><span class="badge bg-info text-dark">{{ $admin->acces }}</span></td>
+                <td>
+                  <a href="tel:{{ $admin->tel ?? '' }}">
+                    {{ $admin->tel ?? '—' }}
+                  </a>
+                </td>
+                <td>{{ $admin->bureau ?? '—' }}</td>
+                <td class="text-center">
+                  <a href="{{ route('admins.edit', $admin->id_admin ?? $admin->id) }}"
+                     class="btn btn-outline-primary btn-sm me-1">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <form action="{{ route('admins.destroy', $admin->id_admin ?? $admin->id) }}"
+                        method="POST" class="d-inline"
+                        onsubmit="return confirm('Supprimer cet administrateur ?');">
+                    @csrf @method('DELETE')
+                    <button class="btn btn-outline-danger btn-sm">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="8" class="text-center py-5 text-muted">
+                  <i class="fas fa-user-slash mb-2" style="font-size:1.5rem;"></i><br>
+                  Aucun administrateur trouvé.
+                </td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+
+      {{-- Mobile card view: affiche tous les champs --}}
+      <div class="d-block d-md-none">
+        @forelse($admins as $admin)
+          @php($user = $admin->user)
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div class="me-3" style="width:50px; height:50px;">
+                  @if(optional($user)->photo)
+                    <img src="{{ asset('storage/'.$user->photo) }}"
+                         class="rounded-circle w-100 h-100 object-fit-cover" alt="">
+                  @else
+                    <div class="bg-secondary text-white rounded-circle w-100 h-100 d-flex align-items-center justify-content-center">
+                      {{ strtoupper(substr($user->prenom,0,1).substr($user->nom,0,1)) }}
+                    </div>
+                  @endif
+                </div>
+                <h5 class="mb-0">{{ $user->prenom }} {{ $user->nom }}</h5>
+              </div>
+              <p class="mb-1"><strong>ID :</strong> {{ $admin->id_admin ?? $admin->id }}</p>
+              <p class="mb-1"><strong>Email :</strong> <a href="mailto:{{ $user->email }}">{{ $user->email }}</a></p>
+              <p class="mb-1"><strong>Rôle :</strong> {{ $admin->role }}</p>
+              <p class="mb-1"><strong>Accès :</strong> {{ $admin->acces }}</p>
+              <p class="mb-1"><strong>Téléphone :</strong> {{ $admin->tel ?? '—' }}</p>
+              <p class="mb-3"><strong>Bureau :</strong> {{ $admin->bureau ?? '—' }}</p>
+              <div class="d-flex">
+                <a href="{{ route('admins.edit', $admin->id_admin ?? $admin->id) }}"
+                   class="btn btn-outline-primary btn-sm me-2 flex-fill">
+                  <i class="fas fa-edit me-1"></i> Modifier
+                </a>
+                <form action="{{ route('admins.destroy', $admin->id_admin ?? $admin->id) }}"
+                      method="POST" class="flex-fill"
+                      onsubmit="return confirm('Supprimer cet administrateur ?');">
+                  @csrf @method('DELETE')
+                  <button class="btn btn-outline-danger btn-sm w-100">
+                    <i class="fas fa-trash-alt me-1"></i> Supprimer
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        @empty
+          <p class="text-center text-muted py-4">Aucun administrateur trouvé.</p>
+        @endforelse
+      </div>
+
+      {{-- Pagination --}}
+      @if($admins instanceof \Illuminate\Pagination\LengthAwarePaginator && $admins->hasPages())
+        <div class="d-flex justify-content-center mt-4">
+          {{ $admins->links('pagination::bootstrap-5') }}
+        </div>
+      @endif
+    </div>
+  </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Fermer automatiquement les alertes après 5 secondes
-        setTimeout(function() {
-            $('.alert-dismissible').alert('close');
-        }, 5000);
-    });
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const alert = document.querySelector('.alert-dismissible');
+      if (alert) bootstrap.Alert.getOrCreateInstance(alert).close();
+    }, 5000);
+  });
 </script>
 @endpush
-@endsection

@@ -7,89 +7,145 @@ use App\Models\Professeur;
 use App\Models\Assurer;
 use App\Models\Matiere;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class EvaluationParamController extends Controller
 {
-    /**
-     * Affiche la liste du paramétrage des évaluations.
-     * On récupère tous les paramètres avec leurs relations (professeur et matière)
-     */
+    /* =========================================================
+     |  LISTE
+     |=========================================================*/
     public function index()
     {
-        $params = ParametrageEvaluation::with(['professeur', 'matiere'])->get();
+        // On charge la relation user du professeur + matière pour l’affichage.
+        $params = ParametrageEvaluation::with(['professeur.user', 'matiere'])
+                    ->orderByDesc('created_at')
+                    ->paginate(15);
+
         return view('evaluation_params.index', compact('params'));
     }
 
-    /**
-     * Affiche le formulaire de création d’un nouveau paramétrage.
-     * Seul un utilisateur avec le rôle "professeur" peut accéder à ce formulaire.
-     * Le contrôleur récupère d'abord le profil du professeur (via l'utilisateur connecté)
-     * et ensuite les matières qu'il enseigne via la table Assurer.
-     */
+    /* =========================================================
+     |  FORMULAIRE DE CRÉATION
+     |=========================================================*/
     public function create()
     {
         $user = auth()->user();
+
         if ($user->role !== 'professeur') {
             abort(403, 'Accès réservé aux professeurs.');
         }
 
-        // Récupérer le profil professeur à partir de l'utilisateur authentifié
         $prof = Professeur::where('id_user', $user->id)->firstOrFail();
 
-        // Récupérer les IDs des matières que ce professeur enseigne via la table Assurer
-        $matieresIds = Assurer::where('id_prof', $prof->id_prof)
-                              ->pluck('id_matiere');
-        // Récupérer les matières correspondantes
-        $matieres = Matiere::whereIn('id_matiere', $matieresIds)->get();
+        // Matières assurées par ce professeur
+        $matiereIds = Assurer::where('id_prof', $prof->id_prof)->pluck('id_matiere');
+        $matieres   = Matiere::whereIn('id_matiere', $matiereIds)->get();
 
         return view('evaluation_params.create', compact('prof', 'matieres'));
     }
 
-    /**
-     * Stocke le paramétrage soumis via le formulaire.
-     * On valide que pour l'ensemble des lignes, la somme des pourcentages est égale à 100%.
-     */
-    public function store(Request $request)
+    /* =========================================================
+     |  ENREGISTREMENT
+     |=========================================================*/
+    public function store(Request $request): RedirectResponse
     {
+        /* ---------------- Validation ---------------- */
         $validated = $request->validate([
-            'total' => 'required|integer|min:1', // Nombre total d'évaluations
-            'id_matiere' => 'required|exists:matieres,id_matiere',
-            'evaluations' => 'required|array|min:1',
-            'evaluations.*.type' => 'required|string|in:DS,EXAM,RATTRAPAGE',
-            'evaluations.*.pourcentage' => 'required|numeric|min:0|max:100',
-            'evaluations.*.nombre_evaluations' => 'required|integer|min:1',
+            'id_matiere'               => 'required|exists:matieres,id_matiere',
+            'total'                    => 'required|integer|min:0|max:7',
+            'override_rattrapage'      => 'sometimes|boolean',
+            'pourcentage_rattrapage'   => 'required|numeric|min:0|max:100',
+            'pourcentage_examen_final' => 'required|numeric|min:0|max:100',
+
+            'evaluations'                     => 'required|array|min:1',
+            'evaluations.*.type'              => 'required|string|in:DS,EXAM',
+            'evaluations.*.pourcentage'       => 'required|numeric|min:0|max:100',
+            'evaluations.*.nombre_evaluations'=> 'required|integer|min:1',
         ]);
 
-        // Vérifier que la somme des pourcentages de toutes les lignes est égale à 100%
-        $sum = 0;
-        foreach ($validated['evaluations'] as $eval) {
-            $sum += $eval['pourcentage'];
-        }
-        if (abs($sum - 100) > 0.01) {
-            return redirect()->back()
-                ->withErrors(['La somme de tous les pourcentages doit être égale à 100%.'])
-                ->withInput();
+        // Vérifier que DS+EXAM totalisent 100 %
+        $sumDSPct = collect($validated['evaluations'])
+                      ->sum('pourcentage');
+        if (abs($sumDSPct - 100) > 0.01) {
+            return back()->withErrors([
+                'evaluations' => 'La somme des pourcentages DS + Examen final doit être 100 %.',
+            ])->withInput();
         }
 
-        // Récupérer l'ID de la matière sélectionnée
-        $id_matiere = $validated['id_matiere'];
-        // Récupérer l'identifiant du professeur à partir de l'utilisateur authentifié
-        $profId = auth()->user()->professeur->id_prof;
-
-        // Enregistrer chaque paramétrage (chaque ligne)
-        foreach ($validated['evaluations'] as $evalData) {
-            ParametrageEvaluation::create([
-                'id_professeur'      => $profId,
-                'id_matiere'         => $id_matiere,
-                'type'               => $evalData['type'],
-                'pourcentage'        => $evalData['pourcentage'],
-                'nombre_evaluations' => $evalData['nombre_evaluations'],
-            ]);
+        // Vérifier que Rattrapage + Examen final = 100 %
+        $sumRattr = $validated['pourcentage_rattrapage'] +
+                    $validated['pourcentage_examen_final'];
+        if (abs($sumRattr - 100) > 0.01) {
+            return back()->withErrors([
+                'pourcentage_rattrapage'   => 'Le total rattrapage + examen final doit être 100 %.',
+                'pourcentage_examen_final' => 'Le total rattrapage + examen final doit être 100 %.',
+            ])->withInput();
         }
 
-        return redirect()->route('evaluation-params.index')
-                         ->with('success', 'Paramétrage enregistré avec succès.');
+        /* ---------------- Création -------------------*/
+        $profId       = auth()->user()->professeur->id_prof;
+        $flagOverride = $request->boolean('override_rattrapage', false);
+
+        DB::transaction(function () use ($validated, $profId, $flagOverride) {
+            foreach ($validated['evaluations'] as $ev) {
+                ParametrageEvaluation::create([
+                    'id_professeur'            => $profId,
+                    'id_matiere'               => $validated['id_matiere'],
+                    'type'                     => $ev['type'],
+                    'pourcentage'              => $ev['pourcentage'],
+                    'nombre_evaluations'       => $ev['nombre_evaluations'],
+                    'override_rattrapage'      => $flagOverride,
+                    'pourcentage_rattrapage'   => $validated['pourcentage_rattrapage'],
+                    'pourcentage_examen_final' => $validated['pourcentage_examen_final'],
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('evaluation-params.index')
+            ->with('success', 'Paramétrage enregistré avec succès.');
     }
 
-    // Les méthodes show, edit, update et destroy pourront être ajoutées ultérieurement si besoin.
+    /* =========================================================
+     |  FORMULAIRE D'ÉDITION
+     |=========================================================*/
+    public function edit($id)
+    {
+        $param = ParametrageEvaluation::findOrFail($id);
+        return view('evaluation_params.edit', compact('param'));
+    }
+
+    /* =========================================================
+     |  MISE À JOUR
+     |=========================================================*/
+    public function update(Request $request, $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'id_professeur'      => 'required|integer|exists:professeurs,id_prof',
+            'id_matiere'         => 'required|integer|exists:matieres,id_matiere',
+            'type'               => 'required|in:DS,EXAM,RATTRAPAGE',
+            'nombre_evaluations' => 'required|integer|min:1',
+            'pourcentage'        => 'required|numeric|min:0|max:100',
+        ]);
+
+        $param = ParametrageEvaluation::findOrFail($id);
+        $param->update($validated);
+
+        return redirect()
+            ->route('evaluation-params.index')
+            ->with('success', 'Paramétrage mis à jour avec succès.');
+    }
+
+    /* =========================================================
+     |  SUPPRESSION
+     |=========================================================*/
+    public function destroy(ParametrageEvaluation $evaluation): RedirectResponse
+    {
+        $evaluation->delete();
+
+        return redirect()
+            ->route('evaluation-params.index')
+            ->with('success', 'Paramétrage supprimé.');
+    }
 }

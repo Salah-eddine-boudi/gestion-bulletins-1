@@ -9,6 +9,15 @@
         @method('PUT')
 
         <div class="mb-3">
+            <label for="genre" class="form-label">Genre</label>
+            <select name="genre" id="genre" class="form-control">
+                <option value="">Sélectionner un genre</option>
+                <option value="M" {{ $eleve->genre == 'M' ? 'selected' : '' }}>Masculin</option>
+                <option value="F" {{ $eleve->genre == 'F' ? 'selected' : '' }}>Féminin</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
             <label for="date_naissance" class="form-label">Date de naissance</label>
             <input type="date" name="date_naissance" class="form-control" value="{{ $eleve->date_naissance }}" required>
         </div>

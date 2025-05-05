@@ -1,3 +1,4 @@
+{{-- resources/views/professeurs/index.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
@@ -5,170 +6,200 @@
 <div class="container py-4">
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
-            <h2 class="mb-0">Liste des Professeurs</h2>
+            <h2 class="mb-0">Professeurs</h2>
         </div>
         <div class="col-md-6 text-md-end">
-            <a href="{{ route('professeurs.create') }}" class="btn btn-primary">
-                <i class="fas fa-user-plus me-1"></i> Ajouter un professeur
+            <a href="{{ route('professeurs.create') }}" class="btn btn-success">
+                <i class="fas fa-user-plus me-1"></i> Ajouter un Professeur
             </a>
         </div>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show">
             {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show">
             {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">Nom Complet</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Spécialité</th>
-                            <th scope="col">Grade</th>
-                            <th scope="col" class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($professeurs as $professeur)
-                            <tr>
-                                <!-- Affichage de la photo -->
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar bg-light text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                            @if ($professeur->user->photo)
-                                                <img src="{{ asset('storage/' . $professeur->user->photo) }}" alt="{{ $professeur->user->prenom }}" class="img-fluid rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">
-                                            @else
-                                                <i class="fas fa-user"></i>
-                                            @endif
+    {{-- Desktop table --}}
+    <div class="table-responsive d-none d-md-block">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Photo</th>
+                    <th>Nom Complet</th>
+                    <th>Email</th>
+                    <th>Spécialité</th>
+                    <th>Grade</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($professeurs as $prof)
+                    @php($user = $prof->user)
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-3" style="width:40px; height:40px;">
+                                    @if($user && $user->photo)
+                                        <img src="{{ asset('storage/'.$user->photo) }}"
+                                             class="rounded-circle w-100 h-100" style="object-fit:cover;" alt="">
+                                    @else
+                                        <div class="bg-light rounded-circle w-100 h-100 d-flex align-items-center justify-content-center">
+                                            <span class="fw-bold text-primary">
+                                                {{ strtoupper(substr($user->prenom ?? '',0,1).substr($user->nom ?? '',0,1)) }}
+                                            </span>
                                         </div>
-                                        <div>
-                                            <div class="fw-bold">{{ $professeur->user->prenom }} {{ $professeur->user->nom }}</div>
-                                            <small class="text-muted">ID: {{ $professeur->id_prof }}</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <!-- Affichage de l'email -->
-                                <td>
-                                    <a href="mailto:{{ $professeur->user->email }}" class="text-decoration-none">
-                                        <i class="fas fa-envelope me-1 text-muted"></i>
-                                        {{ $professeur->user->email }}
-                                    </a>
-                                </td>
-                                <!-- Affichage de la spécialité -->
-                                <td>{{ $professeur->specialite }}</td>
-                                <!-- Affichage du grade -->
-                                <td>{{ $professeur->grade }}</td>
-                                <td>
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a href="{{ route('professeurs.show', $professeur->id_prof) }}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye me-1"></i> Voir
-                                        </a>
-                                        <a href="{{ route('professeurs.edit', $professeur->id_prof) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit me-1"></i> Modifier
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $professeur->id_prof }}">
-                                            <i class="fas fa-trash me-1"></i> Supprimer
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Modal de confirmation de suppression -->
-                                    <div class="modal fade" id="deleteModal{{ $professeur->id_prof }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ $professeur->id_prof }}" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header bg-danger text-white">
-                                                    <h5 class="modal-title" id="deleteModalLabel{{ $professeur->id_prof }}">Confirmation de suppression</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <p>Êtes-vous sûr de vouloir supprimer le professeur <strong>{{ $professeur->user->prenom }} {{ $professeur->user->nom }}</strong> ?</p>
-                                                    <p class="text-danger"><small>Cette action est irréversible et supprimera toutes les données associées à ce professeur.</small></p>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                    <form action="{{ route('professeurs.destroy', $professeur->id_prof) }}" method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-4">
-                                    <div class="alert alert-info mb-0">
-                                        <i class="fas fa-info-circle me-2"></i> Aucun professeur trouvé
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination -->
-            @if(method_exists($professeurs, 'links'))
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <div class="text-muted">
-                        @if(method_exists($professeurs, 'total'))
-                            Affichage de {{ $professeurs->firstItem() }} à {{ $professeurs->lastItem() }} sur {{ $professeurs->total() }} professeurs
-                        @else
-                            {{ count($professeurs) }} professeur(s) au total
-                        @endif
+                                    @endif
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ $user->prenom ?? 'Inconnu' }} {{ $user->nom ?? '' }}</div>
+                                    <small class="text-muted">ID: {{ $prof->id_prof }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @if($user && $user->email)
+                                <a href="mailto:{{ $user->email }}" class="text-decoration-none">
+                                    <i class="fas fa-envelope me-1 text-muted"></i>{{ $user->email }}
+                                </a>
+                            @else
+                                <span class="text-muted">N/A</span>
+                            @endif
+                        </td>
+                        <td>{{ $prof->specialite }}</td>
+                        <td>{{ $prof->grade }}</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ route('professeurs.show',$prof->id_prof) }}" class="btn btn-outline-info" title="Voir">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('professeurs.edit',$prof->id_prof) }}" class="btn btn-outline-primary" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $prof->id_prof }}" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            {{-- Modal --}}
+                            <div class="modal fade" id="deleteModal{{ $prof->id_prof }}" tabindex="-1">
+                              <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title">Supprimer professeur</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                  </div>
+                                  <div class="modal-body text-center">
+                                    Supprimer <strong>{{ $user->prenom ?? '' }} {{ $user->nom ?? 'Inconnu' }}</strong> ?
+                                  </div>
+                                  <div class="modal-footer justify-content-center">
+                                    <form action="{{ route('professeurs.destroy',$prof->id_prof) }}" method="POST">
+                                      @csrf @method('DELETE')
+                                      <button class="btn btn-danger">Oui</button>
+                                    </form>
+                                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Non</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="6" class="text-center text-muted py-4">Aucun professeur trouvé.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Mobile cards --}}
+    <div class="d-block d-md-none">
+        @forelse ($professeurs as $prof)
+            @php($user = $prof->user)
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3" style="width:50px;height:50px;">
+                            @if($user && $user->photo)
+                                <img src="{{ asset('storage/'.$user->photo) }}"
+                                     class="rounded-circle w-100 h-100" style="object-fit:cover;" alt="">
+                            @else
+                                <div class="bg-light rounded-circle w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <span class="fw-bold text-primary">
+                                        {{ strtoupper(substr($user->prenom ?? '',0,1).substr($user->nom ?? '',0,1)) }}
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+                        <h5 class="mb-0">{{ $user->prenom ?? 'Inconnu' }} {{ $user->nom ?? '' }}</h5>
                     </div>
-                    <div>
-                        {{ $professeurs->appends(request()->query())->links('pagination::bootstrap-4') }}
+                    <p class="mb-1"><strong>ID :</strong> {{ $prof->id_prof }}</p>
+                    <p class="mb-1">
+                        <strong>Email :</strong> {{ $user->email ?? 'N/A' }}
+                    </p>
+                    <p class="mb-1"><strong>Spécialité :</strong> {{ $prof->specialite }}</p>
+                    <p class="mb-3"><strong>Grade :</strong> {{ $prof->grade }}</p>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('professeurs.show',$prof->id_prof) }}"
+                           class="btn btn-info flex-fill btn-sm">
+                            <i class="fas fa-eye me-1"></i> Voir
+                        </a>
+                        <a href="{{ route('professeurs.edit',$prof->id_prof) }}"
+                           class="btn btn-primary flex-fill btn-sm">
+                            <i class="fas fa-edit me-1"></i> Modifier
+                        </a>
+                        <button class="btn btn-danger flex-fill btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModalMobile{{ $prof->id_prof }}">
+                            <i class="fas fa-trash me-1"></i> Supprimer
+                        </button>
+
+                        {{-- Mobile delete modal --}}
+                        <div class="modal fade" id="deleteModalMobile{{ $prof->id_prof }}" tabindex="-1">
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title">Supprimer professeur</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                              </div>
+                              <div class="modal-body text-center">
+                                Supprimer <strong>{{ $user->prenom ?? '' }} {{ $user->nom ?? 'Inconnu' }}</strong> ?
+                              </div>
+                              <div class="modal-footer justify-content-center">
+                                <form action="{{ route('professeurs.destroy',$prof->id_prof) }}" method="POST">
+                                  @csrf @method('DELETE')
+                                  <button class="btn btn-danger">Oui</button>
+                                </form>
+                                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Non</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                     </div>
                 </div>
-            @endif
-        </div>
+            </div>
+        @empty
+            <p class="text-center text-muted">Aucun professeur trouvé.</p>
+        @endforelse
+
+        @if(method_exists($professeurs,'links'))
+            <div class="d-flex justify-content-center mt-3">
+                {{ $professeurs->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
     </div>
 </div>
 @else
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow border-danger">
-                <div class="card-header bg-danger text-white">
-                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Accès interdit</h4>
-                </div>
-                <div class="card-body text-center py-5">
-                    <p class="lead mb-4">Vous devez être connecté pour accéder à cette page.</p>
-                    <a href="{{ route('login') }}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-lock me-2"></i> Se connecter
-                    </a>
-                </div>
-            </div>
-        </div>
+<div class="container py-5 text-center">
+    <div class="alert alert-danger">
+        Accès interdit. <a href="{{ route('login') }}">Se connecter</a>.
     </div>
 </div>
 @endif
 @endsection
-
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Activer les tooltips Bootstrap
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-    });
-</script>
-@endpush

@@ -66,6 +66,7 @@
             transition: var(--transition-default);
             box-shadow: var(--shadow-md);
             padding-top: var(--header-height);
+            overflow-y: auto;
         }
 
         .sidebar-collapsed {
@@ -192,25 +193,197 @@
             color: var(--secondary-color);
         }
 
+        /* Enhanced Search Styles */
         .header-search {
             flex: 1;
             max-width: 600px;
             margin: 0 1rem;
+            position: relative;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
         }
 
         .search-input {
             width: 100%;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1rem 0.6rem 2.8rem;
             border-radius: 20px;
             border: 1px solid #E2E8F0;
             background-color: #EDF2F7;
             transition: var(--transition-default);
+            font-size: 0.95rem;
         }
 
         .search-input:focus {
             outline: none;
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+            background-color: white;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #718096;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: none;
+        }
+
+        .search-input:not(:placeholder-shown) + .search-clear {
+            display: block;
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow-md);
+            margin-top: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            border: 1px solid #E2E8F0;
+            display: none;
+        }
+
+        .search-dropdown.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .search-categories {
+            display: flex;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 0.5rem;
+            gap: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .search-category {
+            padding: 0.35rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            background-color: #EDF2F7;
+            color: #4A5568;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition-default);
+        }
+
+        .search-category:hover, .search-category.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .search-results {
+            padding: 0.5rem 0;
+        }
+
+        .search-result {
+            padding: 0.7rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: var(--transition-default);
+        }
+
+        .search-result:hover {
+            background-color: #EDF2F7;
+        }
+
+        .search-result-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background-color: rgba(66, 153, 225, 0.1);
+            color: var(--accent-color);
+        }
+
+        .search-result-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-result-title {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .search-result-path {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .search-result-badge {
+            font-size: 0.7rem;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+        }
+
+        .search-result-shortcut {
+            font-size: 0.8rem;
+            color: #718096;
+            background-color: #EDF2F7;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .search-no-results {
+            padding: 1.5rem;
+            text-align: center;
+            color: #718096;
+        }
+
+        .search-footer {
+            padding: 0.7rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #E2E8F0;
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .search-footer-tips {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .search-footer-tip {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .search-footer-key {
+            background-color: #E2E8F0;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
         }
 
         .header-nav {
@@ -369,6 +542,74 @@
             text-align: center;
         }
 
+        /* Quick Action Button */
+        .quick-action-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            z-index: 100;
+            transition: var(--transition-default);
+        }
+
+        .quick-action-btn:hover {
+            background-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .quick-action-menu {
+            position: absolute;
+            bottom: 65px;
+            right: 0;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow-md);
+            width: 220px;
+            overflow: hidden;
+            transform: scale(0.95);
+            transform-origin: bottom right;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition-default);
+        }
+
+        .quick-action-btn.active .quick-action-menu {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .quick-action-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            transition: var(--transition-default);
+            cursor: pointer;
+        }
+
+        .quick-action-item:hover {
+            background-color: rgba(22, 160, 133, 0.1);
+            color: var(--secondary-color);
+        }
+
+        .quick-action-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 992px) {
             .sidebar {
@@ -398,13 +639,23 @@
             .sidebar-overlay.show {
                 display: block;
             }
+
+            .header-search {
+                max-width: none;
+            }
         }
 
         @media (max-width: 768px) {
-            .header-search {
-                display: none;
+            .search-dropdown {
+                position: fixed;
+                top: var(--header-height);
+                left: 0;
+                right: 0;
+                margin-top: 0;
+                border-radius: 0 0 10px 10px;
+                max-height: 80vh;
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
@@ -562,164 +813,295 @@
         </button>
         
         <div class="header-search">
-            <input type="text" class="search-input" placeholder="Rechercher...">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Rechercher une page ou une fonctionnalité..." autocomplete="off">
+                <i class="fas fa-times search-clear" id="searchClear"></i>
+            </div>
+            <div class="search-dropdown" id="searchDropdown">
+                <div class="search-categories">
+                    <div class="search-category active" data-category="all">Tout</div>
+                    <div class="search-category" data-category="pages">Pages</div>
+                    <div class="search-category" data-category="users">Utilisateurs</div>
+                    <div class="search-category" data-category="academic">Pédagogie</div>
+                    <div class="search-category" data-category="settings">Paramètres</div>
+                </div>
+                <div class="search-results" id="searchResults">
+                    <!-- Les résultats seront chargés dynamiquement ici -->
+                </div>
+                <div class="search-footer">
+                    <span>Résultats filtrés par rôle</span>
+                    <div class="search-footer-tips">
+                        <div class="search-footer-tip">
+                            <span class="search-footer-key">↑</span>
+                            <span class="search-footer-key">↓</span>
+                            <span>Naviguer</span>
+                        </div>
+                        <div class="search-footer-tip">
+                            <span class="search-footer-key">Enter</span>
+                            <span>Sélectionner</span>
+                        </div>
+                        <div class="search-footer-tip">
+                            <span class="search-footer-key">ESC</span>
+                            <span>Fermer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="header-nav">
-            <button class="header-btn">
+            <button class="header-btn" title="Notifications">
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge"></span>
             </button>
             
-            <button class="header-btn">
+            <button class="header-btn" title="Paramètres">
                 <i class="fas fa-cog"></i>
             </button>
             
             @auth
-            <div class="dropdown user-dropdown ms-3">
-                @php
-                $photo = Auth::user()->photo
-                    ? asset('storage/' . Auth::user()->photo)
-                    : asset('storage/profile_pictures/default.png');
-                @endphp
-                <div class="user-dropdown-toggle" data-bs-toggle="dropdown">
-                    <img src="{{ $photo }}" alt="Photo de profil" class="user-avatar">
-                    <div class="user-info d-none d-md-flex">
-                        <span class="user-name">{{ Auth::user()->nom }} {{ Auth::user()->prenom }}</span>
+            <div class="user-dropdown dropdown">
+                <div class="user-dropdown-toggle dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ asset('storage/avatars/' . Auth::user()->avatar) }}" alt="Avatar" class="user-avatar">
+                    <div class="user-info d-none d-md-block">
+                        <span class="user-name">{{ Auth::user()->name }}</span>
                         <span class="user-role">{{ ucfirst(Auth::user()->role) }}</span>
                     </div>
                 </div>
-                
                 <ul class="dropdown-menu user-dropdown-menu dropdown-menu-end">
-                    <li class="dropdown-header">
-                        <h6 class="mb-0">{{ Auth::user()->nom }} {{ Auth::user()->prenom }}</h6>
-                        <small class="text-muted">{{ Auth::user()->email }}</small>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                            <i class="fas fa-user-circle text-secondary"></i>
-                            Mon Profil
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="fas fa-bell text-secondary"></i>
-                            Notifications
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="fas fa-cog text-secondary"></i>
-                            Paramètres
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-                        <button type="button" class="dropdown-item" onclick="document.getElementById('logout-form').submit();">
-                            <i class="fas fa-sign-out-alt text-danger"></i>
-                            Déconnexion
-                        </button>
+                        <div class="dropdown-header">
+                            <h6 class="mb-0">{{ Auth::user()->name }}</h6>
+                            <small class="text-muted">{{ Auth::user()->email }}</small>
+                        </div>
+                    form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+                        </form>
                     </li>
                 </ul>
             </div>
             @else
-            <div class="d-flex align-items-center ms-3">
-                <a href="{{ route('login') }}" class="btn btn-outline-primary btn-sm me-2">Se Connecter</a>
-                <a href="{{ route('register') }}" class="btn btn-primary btn-sm">S'inscrire</a>
-            </div>
+            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary me-2">Connexion</a>
+            <a href="{{ route('register') }}" class="btn btn-sm btn-primary">Inscription</a>
             @endauth
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="main-content" id="main-content">
-        <div class="container-fluid">
-            @yield('content')
-        </div>
+    <main class="main-content" id="mainContent">
+        @yield('content')
     </main>
 
-    <!-- Mobile Sidebar Overlay -->
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Scripts JS -->
+    <!-- Quick Action Button -->
+    <div class="quick-action-btn" id="quickActionBtn">
+        <i class="fas fa-plus"></i>
+        <div class="quick-action-menu">
+            <div class="quick-action-item" onclick="window.location.href='{{ route('evaluations.create') }}'">
+                <div class="quick-action-icon"><i class="fas fa-clipboard-check"></i></div>
+                <div>Nouvelle évaluation</div>
+            </div>
+           
+            
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    
+    <!-- Custom JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            // Toggle sidebar
+            const toggleSidebar = document.getElementById('toggle-sidebar');
             const sidebar = document.getElementById('sidebar');
             const mainHeader = document.getElementById('main-header');
-            const mainContent = document.getElementById('main-content');
-            const toggleSidebar = document.getElementById('toggle-sidebar');
-            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
             
-            // Toggle sidebar function
-            function toggleSidebarState() {
-                sidebar.classList.toggle('sidebar-collapsed');
+            toggleSidebar.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
                 mainHeader.classList.toggle('full-width');
                 mainContent.classList.toggle('full-width');
-            }
-            
-            // Handle sidebar toggle on click
-            toggleSidebar.addEventListener('click', function() {
-                if (window.innerWidth > 992) {
-                    toggleSidebarState();
-                } else {
-                    sidebar.classList.toggle('show');
-                    sidebarOverlay.classList.toggle('show');
-                }
+                sidebarOverlay.classList.toggle('show');
             });
             
-            // Close sidebar when clicking overlay
             sidebarOverlay.addEventListener('click', function() {
                 sidebar.classList.remove('show');
                 sidebarOverlay.classList.remove('show');
             });
             
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                if (window.innerWidth <= 992) {
-                    sidebar.classList.remove('sidebar-collapsed');
-                    mainHeader.classList.remove('full-width');
-                    mainContent.classList.remove('full-width');
+            // Dropdown menus in sidebar
+            const dropdownToggles = document.querySelectorAll('.sidebar-link.dropdown-toggle');
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-bs-target');
+                    const targetDropdown = document.querySelector(targetId);
+                    targetDropdown.classList.toggle('show');
+                });
+            });
+            
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            const searchDropdown = document.getElementById('searchDropdown');
+            const searchResults = document.getElementById('searchResults');
+            const searchCategories = document.querySelectorAll('.search-category');
+            
+            searchInput.addEventListener('focus', function() {
+                searchDropdown.classList.add('show');
+                if (this.value.length > 0) {
+                    performSearch(this.value);
+                } else {
+                    showRecentSearches();
                 }
             });
             
-            // Handle dropdown menus in sidebar
-            const dropdownToggles = document.querySelectorAll('.sidebar-link.dropdown-toggle');
+            searchInput.addEventListener('input', function() {
+                if (this.value.length > 0) {
+                    performSearch(this.value);
+                } else {
+                    showRecentSearches();
+                }
+            });
             
-            dropdownToggles.forEach(function(toggle) {
-                toggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Get the target from the data-bs-target attribute
-                    const targetId = this.getAttribute('data-bs-target');
-                    const target = document.querySelector(targetId);
-                    
-                    // Toggle the 'show' class
-                    if (target) {
-                        target.classList.toggle('show');
+            searchClear.addEventListener('click', function() {
+                searchInput.value = '';
+                searchInput.focus();
+                showRecentSearches();
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!searchDropdown.contains(e.target) && e.target !== searchInput) {
+                    searchDropdown.classList.remove('show');
+                }
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    searchDropdown.classList.remove('show');
+                }
+            });
+            
+            searchCategories.forEach(category => {
+                category.addEventListener('click', function() {
+                    searchCategories.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    if (searchInput.value.length > 0) {
+                        performSearch(searchInput.value);
                     }
                 });
             });
             
-            // Active state for sidebar links
-            const currentPath = window.location.pathname;
-            const sidebarLinks = document.querySelectorAll('.sidebar-link:not(.dropdown-toggle)');
-            
-            sidebarLinks.forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && currentPath.includes(href)) {
-                    link.classList.add('active');
+            function performSearch(query) {
+                // Simulate search results - in a real app, this would call an API
+                const activeCategory = document.querySelector('.search-category.active').getAttribute('data-category');
+                
+                // Clear previous results
+                searchResults.innerHTML = '';
+                
+                // Sample data - would be replaced with actual data from server
+                if (query.length > 0) {
+                    const results = getSearchResults(query, activeCategory);
                     
-                    // If it's in a dropdown, open the parent dropdown
-                    const parentDropdown = link.closest('.sidebar-dropdown');
-                    if (parentDropdown) {
-                        parentDropdown.classList.add('show');
+                    if (results.length === 0) {
+                        searchResults.innerHTML = `
+                            <div class="search-no-results">
+                                <i class="fas fa-search mb-3" style="font-size: 2rem; color: #CBD5E0;"></i>
+                                <p>Aucun résultat trouvé pour "${query}"</p>
+                                <small>Essayez avec d'autres termes ou catégories</small>
+                            </div>
+                        `;
+                    } else {
+                        results.forEach(result => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'search-result';
+                            resultItem.innerHTML = `
+                                <div class="search-result-icon">
+                                    <i class="${result.icon}"></i>
+                                </div>
+                                <div class="search-result-content">
+                                    <div class="search-result-title">${result.title}</div>
+                                    <div class="search-result-path">${result.path}</div>
+                                </div>
+                                ${result.badge ? `<span class="search-result-badge">${result.badge}</span>` : ''}
+                            `;
+                            resultItem.addEventListener('click', function() {
+                                window.location.href = result.url;
+                            });
+                            searchResults.appendChild(resultItem);
+                        });
                     }
+                }
+            }
+            
+            function showRecentSearches() {
+                // Display recent searches - would be stored in localStorage or cookies in a real app
+                searchResults.innerHTML = `
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted fs-6">Recherches récentes</span>
+                            <button class="btn btn-sm text-muted" style="font-size: 0.8rem;">Effacer</button>
+                        </div>
+                        <div class="search-result">
+                            <div class="search-result-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="search-result-content">
+                                <div class="search-result-title">Bulletins du semestre 2</div>
+                            </div>
+                        </div>
+                        <div class="search-result">
+                            <div class="search-result-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="search-result-content">
+                                <div class="search-result-title">Paramètres d'évaluation</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            function getSearchResults(query, category) {
+                // Sample data - would be replaced with actual search logic
+                const allResults = [
+                    { title: 'Tableau de bord', path: 'Navigation > Tableau de bord', icon: 'fas fa-tachometer-alt', url: '{{ route("dashboard") }}', category: 'pages' },
+                    { title: 'Liste des élèves', path: 'Utilisateurs > Élèves', icon: 'fas fa-user-graduate', url: '{{ route("eleves.index") }}', category: 'users' },
+                    { title: 'Bulletins de notes', path: 'Pédagogie > Bulletins', icon: 'fas fa-file-alt', url: '{{ route("bulletins.index") }}', category: 'academic' },
+                    { title: 'Paramètres du compte', path: 'Paramètres > Compte', icon: 'fas fa-cog', url: '{{ route("settings") }}', category: 'settings' },
+                    { title: 'Évaluations', path: 'Pédagogie > Évaluations', icon: 'fas fa-clipboard-check', url: '{{ route("evaluations.index") }}', category: 'academic' },
+                    { title: 'Profil utilisateur', path: 'Utilisateur > Profil', icon: 'fas fa-user', url: '{{ route("profile.show") }}', category: 'users' }
+                ];
+                
+                // Filter by query and category
+                return allResults.filter(result => {
+                    const matchesQuery = result.title.toLowerCase().includes(query.toLowerCase()) || 
+                                        result.path.toLowerCase().includes(query.toLowerCase());
+                    const matchesCategory = category === 'all' || result.category === category;
+                    return matchesQuery && matchesCategory;
+                });
+            }
+            
+            // Quick Action Button
+            const quickActionBtn = document.getElementById('quickActionBtn');
+            quickActionBtn.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!quickActionBtn.contains(e.target)) {
+                    quickActionBtn.classList.remove('active');
                 }
             });
         });
     </script>
+    
+    @yield('scripts')
 </body>
 </html>

@@ -42,6 +42,7 @@ class ElevesController extends Controller
 
         $request->validate([
             'id_user' => 'required|exists:users,id',
+            'genre' => 'nullable|in:M,F',
             'date_naissance' => 'required|date',
             'matricule' => 'required|string|unique:eleves,matricule',
             'niveau_scolaire' => 'required|string',
@@ -53,6 +54,7 @@ class ElevesController extends Controller
 
         $eleve = Eleve::create([
             'id_user' => $request->id_user,
+            'genre' => $request->genre,
             'date_naissance' => $request->date_naissance,
             'matricule' => $request->matricule,
             'niveau_scolaire' => $request->niveau_scolaire,
@@ -93,6 +95,7 @@ class ElevesController extends Controller
         $eleve = Eleve::findOrFail($id_eleve);
 
         $request->validate([
+            'genre' => 'nullable|in:M,F',
             'date_naissance' => 'required|date',
             'matricule' => 'required|string|unique:eleves,matricule,' . $eleve->id_eleve . ',id_eleve',
             'niveau_scolaire' => 'required|string',
