@@ -117,4 +117,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(DirecteurPedagogique::class, 'id_user'); // Un directeur appartient à un utilisateur
     }
+  
+
+
+
 }

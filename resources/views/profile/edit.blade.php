@@ -121,7 +121,14 @@
 </head>
 <body>
 {{-- resources/views/profile/edit.blade.php --}}
-@extends('layouts.app')
+@php
+    $layouts = ['app', 'admin', 'admin2'];
+    $layout = session('layout', 'app');
+    if (!in_array($layout, $layouts)) $layout = 'app';
+    $layoutPath = 'layouts.' . $layout;
+@endphp
+
+@extends($layoutPath)
 
 @section('head')
   {{-- Bootstrap Icons --}}
@@ -161,7 +168,7 @@
             </div>
           @endif
 
-          <form method="POST" action="{{ route('profile.edit') }}"
+          <form method="POST" action="{{ route('profile.update') }}"
                 enctype="multipart/form-data" id="profileForm">
             @csrf @method('PATCH')
 

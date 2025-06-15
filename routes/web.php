@@ -140,3 +140,39 @@ Route::get('/test-mail', function () {
     Mail::to('test@example.com')->send(new TestMail());
     return 'Test mail envoyé';
 });
+
+
+// Page de signature par le DP
+// Affiche la page de signature
+Route::get('bulletins/{id}/sign', [BulletinController::class, 'showSignPage'])
+     ->name('bulletins.signPage');
+
+Route::post('bulletins/{id}/sign', [BulletinController::class, 'storeSignature'])
+     ->name('bulletins.sign');
+
+     use App\Http\Controllers\UserController;
+
+Route::post('/set-layout', [UserController::class, 'setLayout'])->name('user.setLayout');
+Route::get('/set-layout', function () {
+    return view('components.layout-selector');
+});
+Route::post('/set-accueil-display', [UserController::class, 'setAccueilDisplay'])->name('user.setAccueilDisplay');
+Route::post('/set-accueil-page', [UserController::class, 'setAccueilPage'])->name('user.setAccueilPage');
+Route::get('/', function () {
+    // Par défaut c'est 'accueil'
+    $accueil = session('accueil_page', 'accueil');
+    // Sécurité : limiter aux valeurs existantes
+    if (!in_array($accueil, ['accueil', 'acceuil_2'])) {
+        $accueil = 'accueil';
+    }
+    return view('public.' . $accueil);
+})->name('home');
+
+Route::get('/settings', function () {
+    return view('settings'); // Crée la vue ou fais ce que tu veux ici
+})->name('settings');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    // ...
+});
+

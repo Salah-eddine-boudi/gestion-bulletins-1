@@ -1,4 +1,11 @@
-@extends('layouts.app')
+@php
+    $layouts = ['app', 'admin', 'admin2'];
+    $layout = session('layout', 'app');
+    if (!in_array($layout, $layouts)) $layout = 'app';
+    $layoutPath = 'layouts.' . $layout;
+@endphp
+
+@extends($layoutPath)
 
 @section('content')
 <style>
@@ -237,68 +244,92 @@
         </div>
     </div>
 
-    <!-- Décision et signature -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Appréciation et décision</h5>
-                </div>
-                <div class="card-body">
-                    <div class="decision-content">
-                        <div class="decision-icon mb-3">
-                            <i class="bi bi-check-circle-fill text-success"></i>
-                        </div>
-                        <h4 class="decision-title mb-3">Passage en 
-                            @if($eleve->niveau_scolaire == 'JM1')
-                                2ème année (JM2)
-                            @elseif($eleve->niveau_scolaire == 'JM2')
-                                3ème année (JM3)
-                            @else
-                                Cycle ingénieur
-                            @endif
-                        </h4>
-                        <p class="decision-text">
-                            L'étudiant a satisfait aux exigences académiques de l'année en cours et est autorisé à passer à l'année supérieure.
-                        </p>
-                        <div class="progress mt-3" style="height: 10px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 100%"></div>
-                        </div>
-                    </div>
-                </div>
+<!-- Décision et signature -->
+<div class="row mb-4">
+    {{-- Appréciation et décision --}}
+    <div class="col-md-8">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Appréciation et décision</h5>
+        </div>
+        <div class="card-body">
+          <div class="decision-content text-center">
+            <div class="decision-icon mb-3">
+              <i class="bi bi-check-circle-fill text-success"></i>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Validation</h5>
-                </div>
-                <div class="card-body text-center">
-                    <p class="text-muted mb-3">Édité le {{ now()->format('d/m/Y') }}</p>
-                    <div class="signature-box mb-3">
-                        @if(file_exists(public_path('storage/image/signature.png')))
-                            <img src="{{ asset('storage/image/signature.png') }}" alt="Signature" class="img-fluid">
-                        @else
-                            <img src="{{ asset('images/tampon.png') }}" alt="Tampon et signature" class="img-fluid">
-                        @endif
-                    </div>
-                    <p class="mb-0">Direction des Études<br>JUNIA Maroc</p>
-                </div>
+            <h4 class="decision-title mb-3">
+              Passage en
+              @if($eleve->niveau_scolaire === 'JM1')
+                2ème année (JM2)
+              @elseif($eleve->niveau_scolaire === 'JM2')
+                3ème année (JM3)
+              @else
+                Cycle ingénieur
+              @endif
+            </h4>
+            <p class="decision-text">
+              L'étudiant a satisfait aux exigences académiques de l'année en cours et est autorisé à passer à l'année supérieure.
+            </p>
+            <div class="progress mt-3" style="height: 10px;">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                   role="progressbar" style="width: 100%"></div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
-
-    <!-- Boutons d'action -->
-    <div class="row">
-        <div class="col-12 text-center">
-            <button class="btn btn-primary me-2" type="button" data-bs-toggle="modal" data-bs-target="#pdfFormatModal">
-                <i class="bi bi-file-pdf me-1"></i> Télécharger PDF
-            </button>
-            <a href="#" class="btn btn-info" onclick="window.print()">
-                <i class="bi bi-printer me-1"></i> Imprimer
-            </a>
+  
+    {{-- Validation et signature --}}
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Validation</h5>
         </div>
+        <div class="card-body text-center">
+          <p class="text-muted mb-3">Édité le {{ now()->format('d/m/Y') }}</p>
+          <div class="signature-box mb-3">
+            @if(! empty($eleve->signature_dp)
+                && Storage::disk('public')->exists($eleve->signature_dp))
+              {{-- Affiche la vraie signature du DP --}}
+              <img src="{{ asset('storage/' . $eleve->signature_dp) }}"
+                   alt="Signature Direction des Études"
+                   class="img-fluid" style="max-height:100px;">
+            @else
+              {{-- Affiche le tampon par défaut --}}
+              <img src="{{ asset('images/tampon.png') }}"
+                   alt="Tampon et signature"
+                   class="img-fluid" style="max-height:100px;">
+            @endif
+          </div>
+          <p class="mb-0">Direction des Études<br>JUNIA Maroc</p>
+        </div>
+      </div>
+  
+      {{-- Bouton vers la page de signature --}}
+      <div class="text-center mt-3">
+        <a href="{{ route('bulletins.signPage', $eleve->id_eleve) }}"
+           class="btn btn-outline-primary">
+          Signer ce bulletin
+        </a>
+      </div>
     </div>
+  </div>
+  
+  <!-- Boutons d'action PDF / Impression -->
+  <div class="row">
+    <div class="col-12 text-center">
+      <button class="btn btn-primary me-2"
+              type="button"
+              data-bs-toggle="modal"
+              data-bs-target="#pdfFormatModal">
+        <i class="bi bi-file-pdf me-1"></i> Télécharger PDF
+      </button>
+      <a href="#" class="btn btn-info" onclick="window.print()">
+        <i class="bi bi-printer me-1"></i> Imprimer
+      </a>
+    </div>
+  </div>
+  
 
     <!-- Modal pour choisir le format du PDF -->
     <div class="modal fade" id="pdfFormatModal" tabindex="-1" aria-labelledby="pdfFormatModalLabel" aria-hidden="true">

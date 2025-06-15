@@ -1,5 +1,12 @@
 {{-- resources/views/auth/register.blade.php --}}
-@extends('layouts.app')
+@php
+    $layouts = ['app', 'admin', 'admin2'];
+    $layout = session('layout', 'app');
+    if (!in_array($layout, $layouts)) $layout = 'app';
+    $layoutPath = 'layouts.' . $layout;
+@endphp
+
+@extends($layoutPath)
 <link rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 

@@ -1,5 +1,12 @@
 {{-- resources/views/evaluation-params/index.blade.php --}}
-@extends('layouts.app')
+@php
+    $layouts = ['app', 'admin', 'admin2'];
+    $layout = session('layout', 'app');
+    if (!in_array($layout, $layouts)) $layout = 'app';
+    $layoutPath = 'layouts.' . $layout;
+@endphp
+
+@extends($layoutPath)
 
 @section('head')
   {{-- Bootstrap Icons --}}

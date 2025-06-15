@@ -1267,4 +1267,57 @@ class BulletinController extends Controller
         
         return $unites;
     }
+    public function showSignPage($id)
+    {
+        $eleve = Eleve::with('user')->findOrFail($id);
+        $user = auth()->user();
+
+        // Bloquer l'accès si l'utilisateur est un élève
+        if ($user->role === 'eleve') {
+            abort(403, 'Vous n’êtes pas autorisé à signer ce bulletin.');
+        }
+
+        return view('bulletins.sign', compact('eleve'));
+    }
+
+    /**
+     * Enregistre la signature envoyée.
+     */
+    public function storeSignature(Request $request, $id)
+    {
+        $eleve = Eleve::findOrFail($id);
+        $user = auth()->user();
+
+        // Bloquer l'accès si l'utilisateur est un élève
+        if ($user->role === 'eleve') {
+            abort(403, 'Vous n’êtes pas autorisé à signer ce bulletin.');
+        }
+
+        $request->validate([
+            'signature_data' => 'required|string',
+        ]);
+
+        [, $base64] = explode(',', $request->input('signature_data'));
+        $png = base64_decode($base64);
+        $filename = "sign_dp_{$id}_" . time() . ".png";
+
+        Storage::disk('public')->put("signatures/{$filename}", $png);
+
+        $eleve->signature_dp = "signatures/{$filename}";
+        $eleve->save();
+
+        return redirect()
+            ->route('bulletins.show', $id)
+            ->with('success', 'Signature du Directeur Pédagogique enregistrée.');
+    }
+
+
+    /**
+     * Vérifie que l'utilisateur peut accéder / modifier ce bulletin.
+     */
+ 
+
+    // …
+
+
 }

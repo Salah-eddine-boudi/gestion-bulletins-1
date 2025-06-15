@@ -1,5 +1,12 @@
 {{-- resources/views/auth/login.blade.php --}}
-@extends('layouts.app')
+@php
+    $layouts = ['app', 'admin', 'admin2'];
+    $layout = session('layout', 'app');
+    if (!in_array($layout, $layouts)) $layout = 'app';
+    $layoutPath = 'layouts.' . $layout;
+@endphp
+
+@extends($layoutPath)
 
 {{-- Charger Bootstrap Icons (idéalement dans layouts.app <head>) --}}
 <link rel="stylesheet"

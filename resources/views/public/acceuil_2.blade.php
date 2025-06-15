@@ -156,6 +156,10 @@
       <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }} animate__animated animate__fadeInLeft animate__delay-5s">
         <i class="bi bi-envelope"></i> Contact
       </a>
+      <a href="{{ url('/set-layout') }}" class="{{ request()->routeIs('contact')?'active':'' }} animate__animated animate__fadeInLeft animate__delay-5s">
+        <i class="bi bi-sliders2-vertical"></i> Mode d'affichage
+      </a>
+      
     </nav>
   </aside>
 
@@ -174,6 +178,7 @@
             <option value="Évaluations" data-url="{{ route('evaluations.index') }}">
           @endauth
           <option value="Contact" data-url="{{ route('contact') }}">
+            
         </datalist>
       </div>
       <div class="header-nav">
